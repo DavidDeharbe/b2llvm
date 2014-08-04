@@ -1,0 +1,50 @@
+/* Author: David */
+IMPLEMENTATION
+    storemax_i
+REFINES
+    storemax
+IMPORTS
+    ioint
+CONCRETE_VARIABLES
+    empty, largest, smallest
+INVARIANT
+    empty : BOOL & largest : INT & smallest : INT &
+    (empty = FALSE => (largest = max(numbers) & smallest = min(numbers)))
+INITIALISATION
+    BEGIN
+        largest := 0;
+        smallest := 0;
+        empty := TRUE
+    END
+OPERATIONS
+    generate =
+    VAR val
+    IN
+        val <-- read_int;
+        IF empty = TRUE THEN
+            largest := val;
+            smallest := val
+        ELSE
+            BEGIN
+                IF val > largest THEN
+                    largest := val
+                END;
+                IF val < smallest THEN
+                    smallest := val
+                END
+            END
+        END
+    END
+    ;
+    res <-- upper =
+    BEGIN
+        print_int(largest);
+        res := largest
+    END
+    ;
+    res <-- lower =
+    BEGIN
+        print_int(smallest);
+        res := smallest
+    END
+END

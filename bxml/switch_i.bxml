@@ -1,0 +1,709 @@
+<Machine name='switch_i' type='implementation'>
+<Abstraction>switch</Abstraction>
+<Concrete_Variables>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Concrete_Variables>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='4'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+<Binary_Predicate operator='or'>
+<Binary_Predicate operator='or'>
+<Binary_Predicate operator='or'>
+<Binary_Predicate operator='or'>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+</Binary_Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+</Binary_Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+</Binary_Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='4'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+</Binary_Predicate>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='step'>
+<Body>
+<VAR_IN>
+<Variables>
+<Identifier value='sum'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Body>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='sum'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Case_Substitution>
+<Value>
+<Identifier value='sum'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Value>
+<Choices>
+<Choice>
+<Value>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Integer_Literal value='2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+</Choices>
+<Else>
+<Choice>
+<Then>
+<Bloc_Substitution>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='v2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Bloc_Substitution>
+</Then>
+</Choice>
+</Else>
+</Case_Substitution>
+</Nary_Substitution>
+</Body>
+</VAR_IN>
+</Body>
+</Operation>
+</Operations>
+</Machine>

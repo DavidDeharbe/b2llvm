@@ -1,0 +1,1735 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+\usepackage{amssymb,amsmath}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{framed}
+\usepackage{a4wide}
+
+\title{Translation of B implementations to the LLVM (\textsc{draft})}
+\author{} \date{}
+
+\newcommand{\trad}[2]{\ensuremath{\lVert \textsf{#1} \rVert^{\textit{#2}}}}
+\newcommand{\nl}[0]{\ensuremath{\hookleftarrow}}
+\newcommand{\mty}[0]{\texttt{""}}
+\DeclareMathOperator{\conc}{\smallfrown}
+\DeclareMathOperator{\isdef}{\blacktriangleright}
+\DeclareMathOperator{\dom}{\mbox{dom}}
+\DeclareMathOperator{\fresh}{\textit{fresh}}
+\DeclareMathOperator{\name}{\mathcal{L}()}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  This document compiles ideas to produce software components to the
+  LLVM intermediate format from B implementations. It is a work in
+  progress and may be later used as a basis to produce a translator
+  from B0 to LLVM.
+\end{abstract}
+
+[[[ TODO: PROOF READ ]]]
+
+[[[ SYNTHESIZE TYPES OF PARSE TREE NODES AND THEIR ATTRIBUTES ]]] 
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+The goal of this work is to connect the B method to the LLVM
+compilation framework. It is motivated by the fact that many compiling
+technologies are implemented in the LLVM framework: optimization,
+static analysis, code generation. Providing a connection from the B
+method to this framework gives the users of the B method access to
+these technologies. Our approach is to define a translation from B0
+(the subset of the B language that is used to describe imperative
+programs) to the LLVM intermediate format.
+
+\section{Notations and basic definitions}
+\label{sec:notations}
+
+The translation is defined by structural recursion on the source
+language B0. For each grammatical construct, a code generation
+function is defined: $\trad{~}{op}$ for operations, $\trad{~}{inst}$
+for instructions, $\trad{~}{exp}$ for expressions and so forth. Each
+such function usually produces a text corresponding to bits of LLVM
+source code (we use $text$ to denote the type for textual values). It
+may have additional parameters and results. In particular, some of
+this extra data is a total mapping from B0 identifiers and types to
+LLVM text ($dict$ denotes the type of such mapping). Additional
+information on those functions will be given below.
+
+We assume that the B0 program has been parsed, and an attributed parse
+tree of this program is available. Each node \textsf{n} in the tree
+has an attribute \textsf{k} that classifies the node in a syntactic
+category. For instance, if \textsf{n.k = BEq}, then \textsf{n}
+represents a ``becomes assigned'' instruction. Moreover, for each kind
+of node that may appear as an element of a list, there exists an
+attribute \textsf{next} that points to the next node in that
+list. This is the case for, e.g. instructions (in a block), branches
+(in a conditional instruction), names (in a declaration list), etc.
+For the last element of that list, the value of this attribute is
+$\bot$. Table~\ref{tab:node-attr} summarizes the different kinds of
+nodes and their attributes.
+
+\begin{table}
+  \begin{center}
+    \begin{tabular}[t]{cc}
+      \begin{tabular}[t]{|l|l|l|}
+        \hline
+        \textsf{k} & Decription & attributes\\
+        \hline
+        \hline
+        \textsf{Impl} & Implementation & $\textsf{sees} : \textsf{Identifiers} (?)$\\
+        & & $\textsf{imports} \in \textsf{Identifiers} (?)$ \\
+        & & $\textsf{values} \in \textsf{Identifiers} (?)$ \\
+        & & $\textsf{vars} \in \textsf{Identifiers} (?)$ \\
+        & & $\textsf{initialization} \in Inst (?)$ \\
+        & & $\cdots$ \\
+        & & \textsf{ops} : Op \\
+        \hline
+        \textsf{Op} & Operation & $\textsf{header} \in \textsf{Hd} $\\
+        & & $\textsf{body} \in \textsf{inst}$ \\
+        & & $\textsf{next} \in \textsf{Op} $\\
+        \hline
+        \textsf{Hd} & Operation header & $ \textsf{ident} \in text$ \\
+        & & $\textsf{output} \in \textsf{VarDecl}$ \\
+        & & $\textsf{input} \in \textsf{VarDecl}$ \\
+        \hline
+        \textsf{Var} & Variable, parameter & $ \textsf{ident} \in text $\\
+        & & $\textsf{type} \in basic type $\\
+        & & $\textsf{next} \in \textsf{Var} $\\
+        \hline
+      \end{tabular}
+      &
+      \begin{tabular}[t]{|l|l|l|}
+        \hline
+        \textsf{k} & Decription & attributes\\
+        \hline
+        \hline
+        \textsf{Blk} & Block instr. & $\textsf{body} \in \textsf{inst}$ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{VarDecl} & Variable decl. & $\textsf{ident}\in \textsf{VarDecl} $\\
+        & & $\textsf{body} \in \textsf{inst}$ \\
+        \hline
+        \textsf{If} & If & $\textsf{branches} \in \textsf{IfBr}$ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{IfBr} & If branch & $ \textsf{cond}\in predicate $ \\
+        & & $\textsf{body} \in \textsf{Instr}$ \\
+        & & $\textsf{next} \in \textsf{IfBr}$ \\
+        \hline
+        \textsf{BEq} & Becomes equal & $\textsf{lhs} \in target $ \\
+        & & $\textsf{rhs} \in expression $ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{Call} & Call instruction & $\textsf{fun} \in name$ \\
+        & & $\textsf{args} \in expression$ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{While} & While instr. & $\textsf{cond} \in predicate $\\
+        & & $\textsf{body} \in \textsf{Instr}$ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{Assert} & Assert instr. & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{Case} & Case instr. & $\textsf{expr} \in expression$\\
+        & & $\textsf{branches} \in \textsf{CaseBr}$ \\
+        & & $\textsf{next} \in \textsf{Instruction}$ \\
+        \hline
+        \textsf{CaseBr} & Case branch & $\textsf{val} \in \textsf{Value}$ \\
+        & & $\textsf{body} \in \textsf{Instr}$ \\
+        & & $\textsf{next} \in \textsf{CaseBr}$ \\
+        \hline
+        \textsf{Value} & Value & ??? \\
+        & & \textsf{next}: \textsf{Value} \\
+        \hline
+      \end{tabular} \\
+      \\
+      \multicolumn{2}{c}{Note: $\textsf{Instr} = \{\textsf{Blk}, \textsf{VarDecl}, \textsf{If}, \textsf{BEq}, \textsf{Call}, \textsf{While}, \textsf{Assert}, \textsf{Case}\}$} \\
+    \end{tabular}
+    \caption{Structure of the parse tree nodes. For each attribute we give the name of the attribute and
+    the type or kind(s) of node that it may be.}
+    \label{tab:node-attr}
+  \end{center}
+\end{table}
+
+Code generation is defined through a set of numbered rules. The
+translation rules for some element \textsf{E} of the B0 language are
+presented using a pseudo-functional language.  In such rules, the
+\textsf{sans serif} and \texttt{typewriter} fonts are used to denote
+\textsf{B0} abstract syntax tree nodes and \texttt{LLVM} text
+respectively, and $\conc$ denotes string catenation and $\nl$ a new
+line.
+
+Several utility functions are employed throughout those rules.  The
+operator $\conc^,$ is the concatenation of two texts separated by a
+comma---provided both texts are not empty.
+\begin{align}
+A \conc^, B \isdef & \textbf{ if } A = \texttt{""} \textbf{ then } B \nonumber \\
+& \textbf{ elsif } B = \texttt{""} \textbf{ then } A \nonumber \\
+& \textbf{ else } A \conc \texttt{", "} \conc B \nonumber
+\end{align}
+
+$\fresh: text \times dict \rightarrow text$ is such that
+$\fresh(t, D)$  returns a text $t'$ that is either $t$, if $t$ is not in
+the domain of the dictionary $D$, or $t$ followed by the string $n$ of
+digits representing the smallest positive number $t \conc n$ does not
+belong to the domain of $D$. This dictionary is a function that keeps 
+\textbf{B identifiers} in domain and \textbf{LLVM identifiers} in range.
+
+We assume that there is an unlimited supply of labels and local variables.
+$\name$ returns a text that represents a fresh label or local variable
+name for the LLVM currently being produced:
+\begin{framed}
+\begin{align}
+\begin{split}
+  &\name : \rightarrow text \\
+  &\textbf{let } v : \mathbb{N} = 0 \textbf{ in let } \name = v := v + 1, \textbf{yields } (\textit{text } v)
+\end{split}
+\end{align}
+\end{framed}
+
+\section{A bird's-eye view of the translation}
+\label{sec:view}
+
+LLVM programs are structured in \emph{modules}. A LLVM module contains
+global \emph{variables}, \emph{functions} and \emph{declarations} of
+external entities. The role of variables is to carry some state,
+functions may act on that state, and declarations specify the type of
+of the external entities.
+
+A B implementation shall then be mapped to a LLVM module.  We also
+assume the existence of B library machines that model LLVM variables
+that are of a basic type, equipped with operations to read and write
+their value.  Other machines, corresponding to more complex types may
+also be imported. One may map each section of the B implementation to
+the LLVM as summarized in the following table:
+
+\begin{center}
+  \begin{tabular}{|c|c|}
+    \hline
+    B0 & LLVM \\
+    \hline
+    \hline
+    implementation & module \\
+    \hline
+    imported library machines & global variables \\
+    \hline
+    other imported machines & other modules \\
+    \hline
+    operations & functions \\
+    \hline
+    external references & declarations \\
+    \hline
+  \end{tabular}
+\end{center}
+
+The definition of this translation is structured in four parts:
+\begin{description}
+\item[control] This part is responsible for describing how B
+  operations, and more specifically, B0 instructions, can be mapped to
+  LLVM statements.
+\item[data] This part is responsible for describing how the data types
+  compatible with B0 are translated to LLVM data types.
+\item[expressions] This part describes how the evaluation of B0
+  expressions and conditions may be codified in LLVM.
+\item[modularity] This part is responsible for describing a strategy
+  to translate separately the different B modules that may compose a
+  B0 implementation to different LLVM source files.
+\end{description}
+
+We first define the translation rule for the root of the source
+program abstract syntax tree, which shall correspond to a B
+implementation. This is a preliminary version where the code
+generation is only able to handle standalone B0 implementations, i.e.
+the state is defined in the ``concrete variables'' clause. Moreover
+the data is restricted to predefined basic types \textsf{INT} and
+\textsf{BOOL}:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{impl} : & \textsf{ Node} \rightarrow text \\
+  \trad{i}{impl} \isdef & \textbf{ let } Dic = \{ \#ModuleName \mapsto  i.moduleName\} \textbf{ in}\\
+  & \textbf{ let } O_{c}, Dic'  = \trad{i.values, Dic }{val} \textbf{ and } O_v, Dic'' = \trad{i.vars, Dic'}{var} \\
+  & \quad \textbf{ and } O_{in} = \trad{i.initialization, Dic''}{ini} \textbf{ and } O_{op} = \trad{i.ops, Dic''}{ops} \\
+  & \quad \textbf{ in} \\
+  & \textbf{ yields } \\
+  & \quad O_{c} \conc O_{v} \conc O_{in} \conc O_{op}    \\
+  & \textbf{ where } \textsf{i.k} = \textsf{Impl} 
+\end{split}
+\end{align}
+\end{framed}
+
+
+
+Code generation for initialisation and operations is specified in
+section~\ref{sec:control}. Code generation for data (type and
+state) is defined in section~\ref{sec:data}, and for expression
+evaluation in section~\ref{sec:expr}. 
+
+\section{Data}
+\label{sec:data}
+
+\subsection{Type}
+\label{sec:type}
+For the time being, the translation only considers two types of
+data: integers and booleans. In the case of integers, the translation
+is based on the supposition that the B0 definition of \textsf{INT}
+is the range $-2^{31}.. 2^{31}-1$:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{BOOL}{type} \isdef & \texttt{ "i1"} \\
+  \trad{INT}{type} \isdef & \texttt{ "i32"}
+\end{split}
+\end{align}
+\end{framed}
+
+Future version of this document should handle other types of data,
+namely integer intervals, enumerated sets, arrays and records (and
+any other implementable data type that B0 allows).
+
+\subsection{State}
+\label{sec:state}
+
+Concrete variables are mapped to so-called internal variables in the
+LLVM program, i.e. private data that is local to the produced
+file. The following rule describes the code generation for such
+variables:
+
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{var} : & \textsf{ Node} \times dict \rightarrow text \times dict \\
+  \trad{v, $D$}{var} \isdef & textListVar = \trad{v,$D$,0}{DicVars}  \textbf{ in}\\
+  & \textbf{ yields } \\
+  & \quad \texttt{" \%struct."}\conc  D(\#ModuleName) \conc \texttt{"\_internalState = type \{"} \\
+  & \quad  \conc textListVar \conc \texttt{"\} "}  \nl , D \\
+  & \textbf{ where } \textsf{v} \ne  \bot \textbf{ and }  \textsf{v.k} = ConcreteVars \\
+  \trad{$\bot$, $D$}{var} \isdef & \textbf{ yields } \texttt{""}, D
+\end{split}
+\end{align}
+\end{framed}
+
+
+The type list of module variables are declared using this role, where:
+n is the actual node, D is the dictionary and  p is the position of variable.
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{DicVars} : & \textsf{ Node } \times dict \times integer \rightarrow text  \times dict \\
+  \trad{n, $D$, p }{DicVars} \isdef  & \textbf{ let }   type = \trad{n.type}{type}   \textbf{ and }  t', D' =  \trad{n.next,D,p+1} {DicVars}   \textbf{ in}   \\
+  & \textbf{ yields } \\
+  & \quad  type \conc^,  t' , D' \cup \{ \textsf{n.ident} \mapsto (\textit{text }  p) \}  \cup\\
+  & \quad \{ \texttt{"\#type\_"}\conc \textsf{n.ident} \mapsto type \} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Var}  \\
+\trad{$\bot$, $D$, p }{DicVars} \isdef & \textbf{yields} \texttt{""}, D
+\end{split}
+\end{align}
+\end{framed}
+
+\subsection{Constant values}
+\label{sec:values}
+
+Constant valuations are translated to constants in the
+LLVM program, as described in the following rule:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{val} : & \textsf{ Node} \times dict \rightarrow text \times dict \\
+  \trad{v, $D$}{val} \isdef & \textbf{ let } type = \trad{n.type}{type}   \textbf{ and }O', D' = \trad{v.next, $D$}{val} \textbf{ and } 
+  id = \texttt{"@"} \conc \textsf{v.ident} \textbf{ in} \\
+  & \textbf{ yields } \\
+  & \quad (id \conc \texttt{" = constant "} \conc type \conc \nl \\
+  & \quad \quad \conc O'), D' \cup \{ \textsf{v.ident} \mapsto id \} \conc  \{ \texttt{"\#type\_"}\conc \textsf{n.ident} \mapsto type \} \\
+  & \textbf{ where } \textsf{v} \ne \bot \textbf{ and } \textsf{v.k} = \textsf{Values} \\
+  \trad{$\bot$, $D$}{val} \isdef & \textbf{ yields } \texttt{""}, D
+\end{split}
+\end{align}
+\end{framed}
+
+\section{Expressions}
+\label{sec:expr}
+
+This section presents rules for the generation of LLVM code to
+evaluate B0 expressions. These rules are restricted to expressions of
+the following basic types: \textsf{BOOL} and \textsf{INT}. Extension
+to handle other basic types, arrays and record is left for future
+work.
+
+The definition of the code generation is divided as follows:
+section~\ref{sec:const} present the base cases (boolean and integer
+literals, identifiers), section~\ref{sec:arith} presents code
+generation rules for arithmetic expressions, section~\ref{sec:rel} and
+section~\ref{sec:cond} is dedicated to relations and conditions.
+
+\subsection{Constants and identifiers}
+\label{sec:const}
+
+The following definition provides a mapping from B0 boolean literals
+to the corresponding LLVM values:
+$$D_{bool} = \{ \textsf{FALSE} \mapsto \texttt{"0"}, \textsf{TRUE} \mapsto \texttt{"1"} \}.$$
+
+Based on this definition, the translation of boolean literals is straightforward:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{exp} : & \textsf{ Node} \times dict \rightarrow text \times text \times  text  \\
+  \trad{n, $D$}{exp} \isdef & \textbf{ yields } \texttt{""}, D_{bool}(\textsf{n.val}), \texttt{"i1"} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{LitBool}
+\end{split}
+\end{align}
+\end{framed}
+
+The translation of integer literals is even simpler, as they have the
+same denotation in B0 and LLVM:
+\begin{framed}
+\begin{align}
+\begin{split}
+ \trad{}{exp} : & \textsf{ Node} \times dict \rightarrow text  \times text \times  text\\
+  \trad{n, $D$}{exp} \isdef & \textbf{ yields } \texttt{""}, \textsf{n.val}, \texttt{"i32"} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{LitInt}
+\end{split}
+\end{align}
+\end{framed}
+
+The last such rule specifies the translation of identifiers. It mainly
+consists in a lookup in the translation dictionary, and shall return
+also the corresponding LLVM data type:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{exp} : & \textsf{ Node} \times dict \rightarrow text \times text \times  text\\
+  \trad{n, $D$}{exp} \isdef & \textbf{ yields } \texttt{""}, D(\textsf{n}), \trad{n.type}{type} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Ident}
+\end{split}
+\end{align}
+\end{framed}
+
+\subsection{Arithmetic operations}
+\label{sec:arith}
+
+The following definition maps B0 binary operators to LLVM binary statements:
+
+$$D_{bari} = \{ + \mapsto \texttt{"add"}, 
+- \mapsto \texttt{"sub"}, * \mapsto \texttt{"mul"}, / \mapsto
+\texttt{"sdiv"}, \% \mapsto \texttt{"srem"} \}.$$
+
+Based upon this definition, the following rule specifies the
+generation of LLVM code responsible for the evaluation of binary
+arithmetic expressions (plus the name of the local variable storing
+the resulting value, and of its LLVM type):
+% TODO: Explicar o que significa o O_p,  O_l,   O_t  ?
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{exp} : & \textsf{ Node} \times dict  \rightarrow text \times text \times  text\\
+  \trad{n, $D$}{exp} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{n.left, $D$}{exp} \textbf{ and }
+  O'_p, O'_l, O'_t = \trad{n.right, $D$}{exp} \\
+  & \quad \textbf{ and } v = \name \textbf{ and } op = D_{bari}(\textsf{n.op}) \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad O'_p \conc \\
+  & \quad v \conc \texttt{" = i32 "} \conc O_l \conc^, O'_l \conc \nl), \\
+  & \quad v, \texttt{i32} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Arith} \textbf{ and } \textsf{n.op} \in \dom D_{bari} \\
+  & \textbf{ assert } O_t = O'_t = \texttt{i32}
+\end{split}
+\end{align}
+\end{framed}
+
+Next rule specifies the code generation for the successor and
+predecessor operators. As LLVM has no corresponding statement, the
+generated code uses addition and subtraction:
+\begin{framed}
+\begin{align}
+\begin{split}
+ \trad{}{exp} : & \textsf{ Node} \times dict  \rightarrow text \times text \times  text\\
+  \trad{n, $D$}{exp} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{n.arg, $D$}{exp} \textbf{ and } v = \name \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad v \conc \texttt{" = i32 add 1, "} \conc O_l \conc \nl), \\
+  & \quad v, \texttt{i32} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Arith} \textbf{ and } \textsf{n.op} = \textsf{succ} \\
+  & \textbf{ assert } O_t = \texttt{i32} \\
+  \trad{n, $D$}{exp} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{n.arg, $D$}{exp} \textbf{ and } v = \name \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad v \conc \texttt{" = i32 sub "} \conc O_l \conc \texttt{", 1"} \conc \nl), \\
+  & \quad v, \texttt{i32} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Arith} \textbf{ and } \textsf{n.op} = \textsf{pred} \\
+  & \textbf{ assert } O_t = \texttt{i32}
+\end{split}
+\end{align}
+\end{framed}
+
+The following rule specifies code generation for the unary
+minus. Since LLVM does not have a specific statement for such
+operation, the translation uses subtraction:
+\begin{framed}
+\begin{align}
+\begin{split}
+ \trad{}{exp} : & \textsf{ Node} \times dict  \rightarrow text \times text \times  text\\
+  \trad{n, $D$}{exp} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{n.arg, $D$}{exp} \textbf{ and } v = \name \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad v \conc \texttt{" = i32 sub 0, "} \conc O_l \conc \nl), \\
+  & \quad v, \texttt{i32} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Arith} \textbf{ and } \textsf{n.op} = \textsf{-} \\
+  & \textbf{ assert } O_t = \texttt{i32}
+\end{split}
+\end{align}
+\end{framed}
+
+Also, LLVM does not have a predefined operation for the ``power''
+operator provided by B0. The corresponding rule introduces a call
+to a function, named \texttt{@power} that implements this operator (the LLVM source code
+for such function is not presented herein):
+\begin{framed}
+\begin{align}
+\begin{split}
+ \trad{}{rel} : & \textsf{ Node} \times dict  \rightarrow text \times text \\
+  \trad{n, $D$}{rel} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{n.left, $D$}{exp} \textbf{ and }
+  O'_p, O'_l, O'_t = \trad{n.right, $D$}{exp} \\
+  & \quad \textbf{ and } l = \name \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad O'_p \conc \\
+  & \quad l \conc \texttt{" = call i32 @power(i32, "} \conc O_l \conc \texttt{", i32 "} \conc O'_l \conc \texttt{")"}) \conc \nl), \\
+  & \quad l, \texttt{"i32"} \\
+  & \textbf{ where } \textsf{r.k} = \textsf{Power} \\
+  & \textbf{ assert } O_t = O'_t = \texttt{i32}
+\end{split}
+\end{align}
+\end{framed}
+
+\subsection{Relations}
+\label{sec:rel}
+
+The LLVM statement \texttt{icmp} compares integers or vectors of integers;
+and the \texttt{fcmp} statement compares floats of vectors of floats. The
+translation produces \texttt{icmp} statements such as:
+\begin{verbatim}
+  %5 = icmp slt i32 %2, %4
+\end{verbatim}
+
+We first define a mapping from B relational operators to LLVM
+keywords:
+$$D_{op} = \{ = \mapsto \texttt{"eq"}, 
+  \ne \mapsto \texttt{"ne"}, 
+  < \mapsto \texttt{"slt"}, 
+  \le \mapsto \texttt{"sle"}, 
+  > \mapsto \texttt{"sgt"}, 
+  \ge \mapsto \texttt{"sge"} \}.$$
+
+\begin{framed}
+\begin{align}
+\begin{split}
+ \trad{}{rel} : & \textsf{ Node} \times dict  \rightarrow text \times text \\
+  \trad{r, $D$}{rel} \isdef & \textbf{ let } O_p, O_l, O_t =
+  \trad{r.left, $D$}{exp} \textbf{ and }
+  O'_p, O'_l, O'_t = \trad{r.right, $D$}{exp} \\
+  & \quad \textbf{ and } l = \name \textbf{ and } op = D_{op}(\textsf{r.op}) \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad (O_p \conc \\
+  & \quad O'_p \conc \\
+  & \quad l \conc \texttt{" = icmp "} \conc op \conc \texttt{" "} \conc O_t \conc \texttt{" "} \conc O_l \conc^, O'_l \conc \nl), \\
+  & \quad l \\
+  & \textbf{ where } \textsf{r.k} = \textsf{BinRel} \\
+  & \textbf{ assert } O_t = O'_t = \texttt{i32}
+\end{split}
+\end{align}
+\end{framed}
+   
+\subsection{Conditions}
+\label{sec:cond}
+
+The translation of conditions takes as input a condition node
+\textsf{n}, a dictionary $D$, as well as two labels $L_t$ and $L_f$
+that correspond to program locations where the execution shall jump
+when the condition is evaluted to true or false, respectively.
+
+The first rule defines the translation of an atomic relation:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{cond} : & \textsf{ Node} \times dict \times text \times text \rightarrow text \\
+  \trad{n, $D$, $L_t$, $L_f$}{cond} \isdef
+  & \textbf{ let } O_p, O_l = \trad{n, $D$}{rel} \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad O_p \conc \\
+  & \quad \texttt{br i1 } \conc O_l \conc \texttt{" , label \%"} \conc L_t \conc \texttt{", label \%"} \conc L_f \conc \nl  \\
+  & \textbf{ where } \textsf{n.k} = \textsf{BinRel}
+\end{split}
+\end{align}
+\end{framed}
+
+Next is the rule for negations:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{n, $D$, $L_t$, $L_f$}{cond} \isdef
+  & \textbf{ yields} \trad{n.arg, $D$, $L_f$, $L_t$}{cond} \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Neg}
+\end{split}
+\end{align}
+\end{framed}
+
+The following rule handles the case of conjunctions. Note that it produces code
+with a ``short-cut'' when the evaluation of the first argument yields false:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{n, $D$, $L_t$, $L_f$}{cond} \isdef
+  & \textbf{ let } L_i = \name \textbf{ in } \\
+  & \textbf{ let } O_l = \trad{n.left, $D$, $L_i$, $L_f$}{cond} \textbf{ and } \trad{n.right, $D$, $L_t$, $L_f$}{cond} \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad O_l \conc \\
+  & \quad \texttt{; <label>:} \conc L_i \conc \nl \conc \\
+  & \quad O_r \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Conj}
+\end{split}
+\end{align}
+\end{framed}
+
+The last rule for conditions handles disjunctions. It also produces
+code with a short-cut when the first argument evaluates to true:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{n, $D$, $L_t$, $L_f$}{cond} \isdef
+  & \textbf{ let } L_i = \name \textbf{ in } \\
+  & \textbf{ let } O_l = \trad{n.left, $D$, $L_t$, $L_i$}{cond} \textbf{ and } \trad{n.right, $D$, $L_t$, $L_f$}{cond} \textbf{ in } \\
+  & \textbf{ yields} \\
+  & \quad O_l \conc \\
+  & \quad \texttt{; <label>:} \conc L_i \conc \nl \conc \\
+  & \quad O_r \\
+  & \textbf{ where } \textsf{n.k} = \textsf{Conj}
+\end{split}
+\end{align}
+\end{framed}
+
+\section{Control}
+\label{sec:control}
+
+This section addresses how B operations are translated to LLVM
+functions. Each operation is translated in turn, and the result of
+the translation of individual operations is concatenated to yield the
+result of the translation of the operations clause:
+\begin{framed}
+\begin{align}
+  \begin{split}
+  \trad{}{ops} : & \textsf{ Node} \times \textsf{ Dict} \rightarrow text \\
+  \trad{o,D}{ops} \isdef 
+  & \textbf{ yields } \trad{o,D}{op} \conc \trad{o.next,D}{ops}  \\
+  & \textbf{ where } \textsf{o} \neq \bot  \textbf{ and } \textsf{o.k} \in \textsf{Op}  \\
+  \trad{$\bot$,D}{ops} \isdef
+  & \textbf{ yields } \mty 
+  \end{split}
+\end{align}
+\end{framed}
+
+Three main aspects of the translation are discussed presented, namely
+the signature of the operation, information local to the operation,
+and the instructions composing the body of the operation. The
+translation of the types of local data, as well as that of the
+expressions is deferred to sections~\ref{sec:data} and~\ref{sec:expr},
+respectively.
+
+One can distinguish three elements in a LLVM function: the signature,
+memory allocation for local variables, and blocks of LLVM
+statements\footnote{In an attempt to clarify the exposition of our
+  ideas, we will call \emph{instructions} the constituents of a B0
+  operation, and \emph{statements} those of a LLVM function.}.
+
+To map operations to LLVM functions, one needs to consider the
+following:
+\begin{itemize}
+\item The signature of the function is composed of the name of the
+  function, the result type, the name and type of the parameters. The
+  signature may carry other information such as linkage, visibility,
+  calling convention, etc. The B parser provides this information after
+  the type checking phase has been completed.
+
+  As usual in programming languages, LLVM functions may only have one
+  result. B0 operations may produce several results. These results are
+  also known as output parameters of the operation. The translation of
+  output parameters will be function parameters passed by reference,
+  i.e. they are pointers. The return type of the LLVM functions
+  resulting from the translation of B operations will always be
+  \texttt{void}. Translation of operation headers is defined in
+  section~\ref{sec:trad-header}
+
+\item The memory to store local variables is allocated on the stack,
+  using the statement \verb+alloca+, requiring the type of value that
+  need to be stored as well as any memory alignment requirement. The
+  Clang compiler places all the stack allocation statements in the
+  first block of in the routine. To replicate such behaviour, one
+  needs to implement a method to collect the name and type of all the
+  local variables used in the operation. Also, the names have to be
+  translated to conform to LLVM restrictions. All the data structures
+  necessary to implement (straightforwardly) such procedure are
+  available in the abstract syntax tree. This part of the translation 
+  is defined in section~\ref{sec:trad-alloc}.
+  
+\item Finally, the body of the operation has to be transformed to a
+  sequence of LLVM blocks of statements. For each kind of instruction
+  one (or more) translation function is defined. The details are provided
+  in section~\ref{sec:trad-instr}.
+
+\end{itemize}
+
+The translation of an operation is defined by the following rule:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{op} &: \textsf{ Node } \times \textsf{ Dict} \rightarrow text \\
+  \trad{op,d}{op} \isdef
+  & \textbf{ let } O_l = \trad{op}{link} \textbf{ and } O_h, D_h = \trad{op.header,d}{header} \textbf{ in}  \\
+  & \textbf{ let } O_a, D_a = \trad{op.body, $D_h$}{alloc} \textbf{ in}  \\
+  & \textbf{ let } O_i = \trad{op.body, $D_a$}{inst} \textbf{ in}  \\
+  & \textbf{ yields } \texttt{"define "} \conc O_l \conc O_h \conc \texttt{"\{"} \conc \nl \conc \\
+  & \quad \conc O_a \conc \nl \conc O_i \conc \nl \conc \texttt{"ret void"} \conc \nl \conc \texttt{"\}"} \conc \nl  \\
+  & \textbf{ where } \textsf{op} \ne \bot \textbf{ and } \textsf{op.k} = \textsf{Op} 
+\end{split}
+\end{align}
+\end{framed}
+
+The following rule produces the LLVM calling convention keyword
+\texttt{internal} that guarantees that the translated B0 local
+operations are not visible outside the module:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{link} &: \textsf{ Node} \rightarrow text \\
+  \trad{op}{link} \isdef
+  & \textbf{ yields } \texttt{"internal "} \\
+  & \textbf{ where } \textsf{op} \ne \bot \textbf{ and } \textsf{op.LocOp} = \top \\
+  \trad{op}{link} \isdef
+  & \textbf{ yields } \texttt{""} \\
+  & \textbf{ where } \textsf{op} \ne \bot \textbf{ and } \textsf{op.LocOp} \ne \top
+\end{split}
+\end{align}
+\end{framed}
+
+\subsection{Sub-routines signatures}
+\label{sec:trad-header}
+
+The following rules specify the translation of operation headers. It
+is defined through four different patterns, depending on the presence
+of input and output parameters. The name of the LLVM function is the
+name of the B0 operation prefixed by \mbox{@}. The return type is
+always \texttt{void} and the parameter list is made of the translation
+of the input and output parameters:
+
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{header} &: Hd \times dict \rightarrow text \times dict \\
+    \trad{h,D}{header} \isdef& \textbf{ let } T_n = \textsf{"@"} \conc \textsf{h.ident}  \textbf{ and } 
+    \textbf{ and } T_i, D_i = \trad{h.input}{inp} \\
+    & \textbf{ and } T_o, D_o = \trad{h.output}{out} \textbf{ in}  \\
+    & \textbf{ let } T_p = \texttt{" \%struct."} \conc D(\#ModuleName) \conc \\
+    & \texttt{"\_internalState* nocapture \%pointerMVars"}  \textbf{ in}  \\
+    & \textbf{ yields } \texttt{"void "} \conc T_n \conc \texttt{"("} \conc T_p \conc^, T_i \conc^, T_o \conc
+    \texttt{")"}, D_i \cup D_o \conc \{ \textsf{h.ident} \mapsto T_n \}  \\
+    & \textbf{ where } \textsf{h} \ne \bot \textbf{ and } \textsf{h.k} = \textsf{Hd} 
+  \end{split}
+\end{align}
+\end{framed}
+
+Next are the rules that specify recursively the translation of input
+parameters. The first pattern is the base case and the second is the
+case for parameter lists with two or more elements. The name of the
+parameter is the name of the B0 parameter prefixed with \texttt{\%}.
+The type of the parameter is translated through specific rules 
+defined in section~\ref{sec:data}:
+
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{inp} &: \textsf{ Node } \rightarrow text \times dict \\
+    \trad{i}{inp} \isdef& \textbf{ let } T_n = \textsf{"\%"} \conc \textsf{i.ident} 
+    \textbf{ and } T_t = \trad{i.type}{type} 
+    \textbf{ and } T, D = \trad{i.next}{inp} \textbf{ in}  \\
+    & \textbf{ yields } T_t \conc \texttt{" "} \conc (T_n \conc^, T), \{ \textsf{i.ident} \mapsto T_n \} \cup D  \\
+    & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Var}  \\
+    \trad{$\bot$}{inp} \isdef& \textbf{ yields } \mty, \emptyset 
+  \end{split}
+\end{align}
+\end{framed}
+
+The following rules describe how output parameters are translated. It
+is similar to the rules for input parameters. The only difference is
+that parameters need to be of pointer type.
+
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{out} &: \textsf{ Node } \rightarrow text \times dict \\
+    \trad{o}{out} \isdef& \textbf{ let } T_n = \textsf{"\%"} \conc \textsf{o.ident} 
+    \textbf{ and } T_t = \trad{o.type}{type} \conc \texttt{"*"}
+    \textbf{ and } T, D = \trad{o.next}{out} \textbf{ in}  \\
+    & \textbf{ yields } T_t \conc \texttt{" "} \conc (T_n \conc^, T), \{ \textsf{o.ident} \mapsto T_n \} \cup D  \\
+    & \textbf{ where } \textsf{o} \ne \bot \textbf{ and } \textsf{o.k} = \textsf{Var}  \\
+    \trad{$\bot$}{out} \isdef& \textbf{ yields } \mty, \emptyset  
+  \end{split}
+\end{align}
+\end{framed}
+
+\subsection{Stack allocation}
+\label{sec:trad-alloc}
+
+The generation of stack allocation statements processes the parse tree
+in a pre-order depth-first traversal, generating one statement for
+each local variable declaration found. 
+
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{alloc} : & \textsf{ Node } \times dict \rightarrow text \times dict \\
+    \trad{i, $D$}{alloc} \isdef 
+    & \textbf{ let } O_b, D_b = \trad{n, $D$}{alloc}_{base}  \\
+    & \textbf{ and } O_n, D_n = \trad{i.next; $D_b$}{alloc}  \\
+    & \textbf{ yields } O_b \conc \nl \conc O_n, D_n  \\
+    & \textsf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} \in \{\textsf{Blk}, \textsf{VarDecl}, \textsf{If}, \textsf{IfBr}, \textsf{While}, \textsf{Case}, \textsf{CaseBr} \}  \\
+    \trad{i, $D$}{alloc} \isdef 
+    & \textbf{ let } O_n, D_n = \trad{i.next; $D$}{alloc}  \\
+    & \textbf{ yields } O_n, D_n  \\
+    & \textsf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} \not\in \{\textsf{Blk}, \textsf{VarDecl}, \textsf{If}, \textsf{IfBr}, \textsf{While}, \textsf{Case}, \textsf{CaseBr} \}  \\
+    \trad{$\bot$, $D$}{alloc} \isdef & \textbf{ yields } \mty, D 
+  \end{split}
+\end{align}
+\end{framed}
+
+One must avoid generating name conflicts in the LLVM output. For each
+B0 variable \textsf{v} found, a fresh LLVM name \texttt{l} is thus
+created. This association is recorded in the $D$ parameters and results.
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{alloc}_{base} : & \textsf{ Node} \times dict \rightarrow text \times dict \\
+    \trad{i, $D$}{alloc}_{base} \isdef 
+    & \textbf{ yields } \trad{i.body, $D$}{alloc}  \\
+    & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} \in \{\textsf{Blk}, \textsf{While}, \textsf{IfBr}, \textsf{CaseBr} \}  \\
+    \trad{i, $D$}{alloc}_{base} \isdef 
+    & \textbf{ yields } \trad{i.branch, $D$}{alloc}  \\
+    & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} \in \{\textsf{If}, \textsf{Case} \}  \\
+    \trad{i, $D$}{alloc}_{base} \isdef 
+    & \textbf{ let } O_l, D_l = \trad{i.ident, $D$}{local} \textbf{ in}  \\
+    & \textbf{ let } O_b, D_b = \trad{i.body, $D_l$}{alloc} \textbf{ in}  \\
+    & \textbf{ yields } O_l \conc \nl \conc O_b, D_b  \\
+    & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{VarDecl} \\
+    \trad{i, $D$}{alloc}_{base} \isdef 
+    & \textbf{ let } O_l, D_l = \trad{i.ident, $D$}{global} \textbf{ in}  \\
+    & \textbf{ let } O_b, D_b = \trad{i.body, $D_l$}{alloc} \textbf{ in}  \\
+    & \textbf{ yields } O_l \conc \nl \conc O_b, D_b  \\
+    & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Var} 
+  \end{split}
+\end{align}
+\end{framed}
+
+This function get internal references to concrete variables from module.
+
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{global} : & \textsf{ Node } \times dict \rightarrow text \times dict \\
+  \trad{v, $D$}{global} \isdef & 
+  \textbf{ let } T_v = \fresh(\texttt{"\%"}\conc\textsf{v.ident}, D) \textbf{ in}  \\
+  & \textbf{ let } T_n, D_n = \trad{v.next, $D \cup \{ \textsf{v.ident} \mapsto T_v \}$}{local} \textbf{ in}  \\
+  & \textbf{ yields } T_v \conc \texttt{" = getelementptr inbounds "} \conc\\
+  & \texttt{"\%struct.ModuloName\_internalState* \%pointerMVars, i64 0, i32 "} \conc \\
+  & D(\texttt{"\#type\_"}\conc v.ident) \conc \nl \conc T_n, D_n  \\
+  & \textbf{ where } \textsf{v} \ne \bot \textbf{ and } \textsf{v.k} = \textsf{Var}  \\
+  \trad{$\bot$, $D$}{global} \isdef & 
+  \textbf{ yields } \mty, D 
+\end{split}
+\end{align}
+\end{framed}
+
+
+
+To illustrate how heap allocation works in LLVM, this is the statement
+produced by Clang corresponding to the C declaration
+\verb^unsigned short c1^:
+\begin{verbatim}
+  %c1 = alloca i16
+\end{verbatim}
+To generate such statement, one needs to create a name
+(e.g. \texttt{\%c1}) for the location, and to identify the
+corresponding LLVM type (e.g. \texttt{i16}). This is the role of the
+last translation function in this section. It produces the desired
+source code text and enriches the translation dictionary with the
+association between the B0 variable and the created LLVM identifier. It
+relies upon an auxiliary translation function $\trad{}{type}$ to be
+defined hereafter:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{local} : & \textsf{ Node } \times dict \rightarrow text \times dict \\
+  \trad{v, $D$}{local} \isdef & 
+  \textbf{ let } T_v = \fresh(\texttt{"\%"}\conc\textsf{v.ident}, D) \textbf{ in}  \\
+  & \textbf{ let } T_n, D_n = \trad{v.next, $D \cup \{ \textsf{v.ident} \mapsto T_v \}$}{local} \textbf{ in}  \\
+  & \textbf{ yields } T_v \conc \texttt{" = alloca "} \conc \trad{v.type}{type} \conc \nl \conc T_n, D_n  \\
+  & \textbf{ where } \textsf{v} \ne \bot \textbf{ and } \textsf{v.k} = \textsf{Var}  \\
+  \trad{$\bot$, $D$}{local} \isdef & 
+  \textbf{ yields } \mty, D 
+\end{split}
+\end{align}
+\end{framed}
+
+
+
+Following the allocation statement, the LLVM source code contains the
+statements that encodes the instructions in the body of the
+operation. It is the role of the next section to present how this
+translation can be defined.
+
+\subsection{Control flow}
+\label{sec:trad-instr}
+
+The translation function $\trad{}{inst}$ shall produce one labeled,
+sequential, block of LLVM statements for each of the following in the
+B operation: maximal sequences of instructions that do not contain
+branching (i.e. conditionals and loops), and evaluation of branching
+condition. In the target code, each block has a unique label that
+identifies its first statement. The translator has an unbounded supply
+of such labels; recall that a new valid LLVM label may be created with
+the expression $\name$.
+
+The translation includes parameters to carry additional information
+necessary to the translation. One such parameter is a label for the
+next instruction to be translated. If its value is $\bot$ then it is
+considered missing. Otherwise, it is a valid LLVM label and it shall
+be placed in the LLVM output. An auxiliary definition is helpful to
+handle the production of labels:
+\begin{align*}
+\begin{split}
+  \trad{}{inst}_{L} &: Instr \times dict \times text \rightarrow text \\
+  \trad{i, $D$, $L$}{inst}_L \isdef 
+  & \textbf{yields } L \conc \texttt{:} \trad{i, $D$}{inst}  
+\end{split}
+\end{align*}
+
+The signature of the translation function for instructions is
+  \begin{align*}
+    \begin{split}
+      \trad{}{inst} &: Instr \times dict \rightarrow text
+    \end{split}
+  \end{align*}
+In the forthcoming sections, the definition of this function is given
+piecewise, according to the kind of instruction being translated. One
+special case is the absence of node representing an instruction:
+\begin{align}
+  \begin{split}
+    \trad{$\bot$, $D$}{inst} \isdef \textbf{ yields } \texttt{""}
+  \end{split}
+\end{align}
+ 
+\subsubsection{Block}
+
+Block instructions are structuring constructs that have no operational
+intent. The translation is thus defined as the concatenation of the
+translation of the block body and the translation of the following
+statement.
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{let } O_b = \trad{i.body, $D$}{inst} 
+  \textbf{ and } O_n = \trad{i.next, $D$}{inst} \textbf{ in} \\
+  & \textbf{yields } O_b \conc O_n  \\
+  & \textbf{where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Blk} 
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{If}
+
+To translate an if statement \textsf{i}, each branch is translated in
+turn. We assume that each branch has a condition, a body, and a
+successor. In the case of an ``else'' branch, the condition is $\bot$.
+It is the role of $\trad{}{br}$ to produce the translation for such
+branches. Note that at the end of the translation of the body of each
+branch, a jump to the instruction following the if statement must be
+included. Thus a label $L$ is generated and is a parameter of the
+branch translation. It will be used to label the statement
+\textsf{i.next}:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{let } L = \name \textbf{ in} \\
+  & \textbf{let } O_b = \trad{i.branch, $D$, $L$}{br} \textbf{ and }
+  O_n = \trad{i.next, $D$, $L$}{inst}_L \textbf{ in}  \\
+  & \textbf{yields } O_b \conc O_n  \\
+  & \textbf{where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{If} 
+\end{split}
+\end{align}
+\end{framed}
+
+Now, to translate the branches of an if instruction, one must first
+generate code to evaluate the condition of the branch, followed by an
+LLVM conditional branching statement translate, and then translate the
+body of the branch. In LLVM, a conditional statement is as follows:
+\begin{verbatim}
+  br i1 %5, label %6, label %10
+\end{verbatim}
+where \texttt{\%5} is a local variabel of width one bit (since its
+type is \texttt{i1}), storing the value of the condition evaluation,
+and \texttt{\%6} and \texttt{\%10} are statement labels.
+
+The first rule consider branches that have non-void condition and
+sucessor.  Two labels $L_1$ and $L_2$ are created: $L_1$ is the label
+of the branch body, and $L_2$ is the label where the code responsible
+for the execution of the remaining branches is located. $O_p$ is the
+LLVM code responsible for evaluating the condition, $O_l$ being the
+LLVM local variable where the result of the evaluation is stored,
+$O_b$ and $O_n$ stand for the LLVM code sections responsible for
+executing the branch body and the remaining branches, respectively.
+Statement block $O_c$ evaluates the condition, where $O_t$ is the name
+of the temporary register storing its value in the LLVM:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{b, $D$, $L$}{br} : & \textsf{ Node} \times dict \times text \rightarrow text \\
+  \trad{b, $D$, $L$}{br} \isdef 
+  & \textbf{ let } L_1 = \name \textbf{ and } L_2 = \name \textbf{ in}  \\
+  & \textbf{ and } O_p, O_l = \trad{b.cond, $D$, $L_1$, $L_2$}{cond}  \\
+  & \textbf{ and } O_b = \trad{b.body, $D$}{inst} \textbf{ and }
+  O_n = \trad{b.next, $D$, $L$}{br} \textbf{ in}  \\
+  & \textbf{ yields }  \\
+  & \quad O_p \conc \nl \conc  \\
+  & \quad \texttt{"br i1 "} \conc O_l \conc \texttt{", label \%"} \conc L_1 \conc \texttt{" , label \%"} \conc L_2 \conc \nl \conc  \\
+  & \quad L_1 \conc \texttt{:} \conc \nl \conc  \\
+  & \quad O_b \conc  \\
+  & \quad \texttt{"br "} \conc L \conc \nl \conc  \\
+  & \quad L_2 \conc \texttt{":"} \conc \nl \conc  \\
+  & \quad O_n  \\
+  & \textbf{ where } \textsf{b} \ne \bot \textbf{ and } \textsf{b.k} = \textsf{IfBr} \textbf{ and } \textsf{b.cond} \ne \bot \textbf{ and } \textsf{b.next} \ne \bot 
+\end{split}
+\end{align}
+\end{framed}
+
+The second case is that of the last branch of the if instruction, when
+this branch has a condition (i.e. it is an ``elsif''). It is a simplified
+version of the previous rule:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{b, $D$, $L$}{br} \isdef 
+  & \textbf{ let } L_1 = \name \textbf{ and } O_p, O_l, O_t = \trad{b.cond, D}{exp}  \\
+  & \textbf{ and } O_b = \trad{b.body, $D$}{inst} \textbf{ in} \\
+  & \textbf{ yields }  \\
+  & \quad O_p \conc \nl \conc  \\
+  & \quad \texttt{"br i1 "} \conc O_l \conc \texttt{", label \%"} \conc L_1 \conc \texttt{" , label \%"} \conc L \conc \nl \conc  \\
+  & \quad L_1 \conc \texttt{:} \conc \nl \conc  \\
+  & \quad O_b \conc  \\
+  & \quad \texttt{"br "} \conc L \conc \nl \conc  \\
+  & \textbf{ where } \textsf{b} \ne \bot \textbf{ and } \textsf{b.k} = \textsf{IfBr} \textbf{ and } \textsf{b.next} = \bot  \textbf{ and } \textsf{b.cond} \ne \bot  \\
+  & \textbf{ assert } O_t = \texttt{i1} 
+\end{split}
+\end{align}
+\end{framed}
+
+The last case is even simpler; it applies to ``else'' branches:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{b, $D$, $L$}{br} \isdef 
+  & \textbf{let } O_b = \trad{b.body, $D$}{inst} \textbf{ in} \\
+  & \textbf{yields }  \\
+  & \quad O_b \conc  \\
+  & \quad \texttt{"br "} \conc L \conc \nl \conc  \\
+  & \textbf{where } \textsf{b} \ne \bot \textbf{ and } \textsf{b.k} = \textsf{IfBr} \textbf{ and } \textsf{b.next} = \bot  \textbf{ and } \textsf{b.cond} = \bot 
+\end{split}
+\end{align}
+\end{framed}
+
+
+
+\subsubsection{Variable declaration}
+
+The static memory allocation has been produced with the $\trad{}{alloc}$
+operator. The rest of the translation consists in translating the body
+of the variable declaration:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{ yields } \trad{i.body, $D$}{inst} \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{VarDecl} 
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{Identity}
+
+If $\textsf{i.k} = \textsf{Id}$, then \textsf{i} has no effect:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{ yields } \mty \label{trad:id} \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} \in \{ \textsf{Id}, \textsf{Assert} \} 
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{Becomes equal}
+
+In LLVM, assignment is performed with the \texttt{store} statement, e.g.:
+\begin{verbatim}
+store i16 %17, i16* %c1
+\end{verbatim}
+where \texttt{\%17} is the local variable storing the assigned value,
+\texttt{\%c1} is the local variable being assigned, and \texttt{i16}
+is the type of the assigned value.
+
+The translation generates a sequence of statements $O_l$ to evaluate
+the left-hand side in local variable $L_l$ , followed by a sequence of
+statements $O_r$ to evaluate the right-hand side in the local variable
+$L_r$, followed by a single \verb'store' statement to perform the
+assignment:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{ let } O_l, L_l, T_l = \trad{i.lhs, $D$}{lv} \textbf{ and } O_r, L_r, T_r = \trad{i.rhs, $D$}{exp}  \textbf{ in} \\
+  & \textbf{ yields }  \\
+  & \quad O_l \conc \nl  \\
+  & \quad O_r \conc \nl  \\
+  & \quad \texttt{"store "} \conc T_r \conc \texttt{" "} \conc L_r \conc \texttt{", "}
+  \conc T_l \conc \texttt{" "} \conc L_l \conc \nl  \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{BEq}  \\
+  & \textbf{ assert } T_l = T_r \conc \texttt{"*"} 
+\end{split}
+\end{align}
+\end{framed}
+
+$\trad{}{lv}$ is responsible for the translation of assignment
+targets, also known as \emph{lvalues} in C. The different kinds of
+targets are scalar data, array data, array element and field of a
+record. Note that, in the LLVM, arrays are so-called first-class
+types, and assignment statements may target directly an
+array. Considering the restrictions put on the handled B0 elements,
+assignment targets shall only be identifiers:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{lv} &: Node \times dict \rightarrow text \times text \times text \\
+  \trad{n, $D$}{lv} \isdef 
+  & \textbf{ let } T = \trad{n.type}{type} \textbf{ in }  \\
+  & \textbf{ yields } \texttt{""}, D(\textsf{n.ident}), T \conc \texttt{*} \\
+  & \textbf{ where } \textsf{n} \ne \bot \textbf{ and } \textsf{n.k} = \textsf{Ident}
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{While}
+
+For the ``while'' instruction the translation creates three statement
+labels: $L_1$ is the start of the block that evaluates the loop condition;
+$L_2$ is the start of the block that executes the loop body; $L_3$ labels
+the exit of the loop, i.e. the next statement. $O_p$ is the
+LLVM code responsible for evaluating the condition, $O_l$ being the
+LLVM local variable where the result of the evaluation is stored,
+$O_b$ and $O_n$ stand for the LLVM code sections responsible for
+executing the loop body and the following statements:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{ let } L_1 = \name \textbf{ and } L_2 = \name \textbf{ and } L_3 = \name \textbf{ in} \\
+  & \textbf{ let } O_p, O_l = \trad{i.cond, $D$, $L_2$, $L_3$}{cond} \textbf{ and } O_b = \trad{i.body, $D$}{inst}  \\
+  & \textbf{ and } O_n = \trad{i.next, $D$, $L_3$}{inst} \textbf{ in} \\
+  & \textbf{ yields }  \\
+  & \quad L_1 \conc \texttt{":"} \conc \nl \conc  \\
+  & \quad O_p \conc \nl \conc  \\
+  & \quad \texttt{"br i1 "} \conc O_l \conc \texttt{", label \%"} \conc L_2 \conc \texttt{" , label \%"} \conc L_3 \conc \nl \conc  \\
+  & \quad L_2 \conc \texttt{:} \conc \nl \conc  \\
+  & \quad O_b \conc  \\
+  & \quad \texttt{"br "} \conc L_1 \conc \nl \conc  \\
+  & \quad O_n  \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{While}  \\
+  & \textbf{ assert } O_t = \texttt{"i1"} 
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{Callup} 
+
+LLVM has a statement named \texttt{call} for sub-routine calls. For
+instance, the following statement has been generated by the Clang
+compiler for a call to a C function prototyped as
+\verb^void acc(int*, int)^:
+\begin{verbatim}
+call void @acc(i32* %a, i32 %4)
+\end{verbatim}
+By convention, each B0 operation are translated to a LLVM with no
+return value, and where the input and output parameters of the
+operation are translated to parameters passed by value and by
+reference, respectively.
+
+Auxiliary definitions $\trad{}{argval}$ and $\trad{}{argref}$ produce
+snippets of LLVM code responsible for passing argument by value and
+by reference, respectively. The result is a pair of texts, first is
+the code for evaluating the arguments, and second is the comma-separated
+list of typed arguments:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{}{argval} : & \textsf{ Node} \times dict \rightarrow text \times text \times text \\
+  \trad{i, $D$}{argval} \isdef 
+  & \textbf{ let } O_p, O_v, O_t = \trad{i, D}{exp} \textbf{ and } O'_p, O_r = \trad{i.next, D}{argval} \textbf{ in}  \\
+  & \textbf{ yields }  \\
+  & \quad O_p \conc O'_p, (O_t \conc \texttt{" "} \conc O_v) \conc^, O_r  \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Call}  \\
+  \trad{$\bot$, $D$}{argval} \isdef & \texttt{ ""},\texttt{ ""},\texttt{ ""}  \\
+  \trad{}{argref} : & \textsf{ Node} \times dict \rightarrow text \times text \times text \\
+  \trad{i, $D$}{argref} \isdef 
+  & \textbf{ let } O_p, O_v, O_t = \trad{i, D}{exp} \textbf{ and } O'_p, O_r = \trad{i.next, D}{argref} \textbf{ in}  \\
+  & \textbf{ yields }  \\
+  & \quad O_p \conc O'_p, (O_t \conc \texttt{"* "} \conc O_v) \conc^, O_r  \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Call}  \\
+  \trad{$\bot$, $D$}{argref} \isdef & \texttt{ ""},\texttt{ ""},\texttt{ ""} 
+\end{split}
+\end{align}
+\end{framed}
+
+The result of these auxiliary routines are combined to form the LLVM code
+for the whole function call:
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{ let } O_p, O_v = \trad{i.in, D}{argval} \textbf{ and } O'_p, O_r = \trad{i.ou, D}{argref} \textbf{ in} \\
+  & \textbf{ yields }  \\
+  & \quad O_p \conc O'_p \conc  \\
+  & \quad \texttt{"call void "} \conc \trad{i.op, $D$}{exp} \conc \texttt{"("} \conc O_v \conc^, O_r \conc \texttt{")"} \nl  \\
+  & \textbf{ where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Call} 
+\end{split}
+\end{align}
+\end{framed}
+
+\subsubsection{Case}
+
+This instruction shall be translated to a \verb'switch' statement.
+For the sake of simplicity, we assume that case statement without
+else branch are changed so that there is such a branch, with a single
+identity instruction.
+
+The LLVM switch statement is basically a jump table with the following
+concrete syntax (example):
+\begin{verbatim}
+switch i32 %val, label %otherwise [ i32 0, label %onzero
+                                    i32 1, label %onone
+                                    i32 2, label %ontwo ]
+\end{verbatim}
+
+The translation of a case statement shall thus produce a labeled block
+for each branch, and a jump for each value in each branch. We first
+provide an auxiliary definition that yields a mapping from branches to
+labels.
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{lab} : & \textsf{ Node} \rightarrow \textsf{Node} \rightarrow text \\
+    \trad{br}{lab} \isdef 
+    & \textbf{ yields } \{ \textsf{br} \mapsto  \name \} \cup
+    \trad{br.next}{lab}  \\
+    & \textbf{ where } \textsf{br} \ne \bot \textbf{ and } \textsf{br.k} = \textsf{CaseBr}  \\
+    \trad{$\bot$}{lab} \isdef & \textbf{ yields } \{\} 
+  \end{split}
+\end{align}
+\end{framed}
+
+Next we provide definitions that yield the jump table for all
+but the else branch. First, $\trad{}{jump}$ takes as input a
+case branch node, and the mapping to labels and recurses over
+all branches and branch values:
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{jump} : & \textsf{ Node} \times (\textsf{Node} \rightarrow text) \rightarrow text \\
+    \trad{br, $lab$}{jump} \isdef
+    & \textbf{ yields }  \\
+    & \quad \trad{br.val, $lab($br$)$}{jump}_v \conc  \\
+    & \quad \trad{br.next, $lab$}{jump}  \\
+    & \textbf{ where } \textsf{br} \ne \bot \textbf{ and } \textsf{br.k} = \textsf{CaseBr}  \\
+    \trad{$\bot$, $lab$}{jump} \isdef
+    & \textbf{ yields } \texttt{""} 
+  \end{split}
+\end{align}
+\end{framed}
+
+$\trad{}{jump}_v$ is applies to branch values, and has as second argument a single label $l$:
+\begin{framed}
+  \begin{align}
+\begin{split}
+    \trad{}{jump}_v : & \textsf{ Node} \times text \rightarrow text \\
+    \trad{val, $l$}{jump}_v \isdef
+    & \textbf{ yields }  \\
+    & \quad \trad{val.type}{type} \conc \texttt{" "} \conc 
+    \trad{val.value}{value} \conc \texttt{", label \%"} \conc l \conc \nl \conc \\
+    & \quad \trad{val.next, $l$}{jump}  \\
+    & \textbf{ where } \textsf{val} \ne \bot \textbf{ and } \textsf{val.k} = \textsf{Value}  \\
+    \trad{$\bot$, $l$}{jump}_v \isdef
+    & \textbf{ yields } \texttt{""} 
+  \end{split}
+\end{align}
+\end{framed}
+
+The third and last auxiliary definition $\trad{}{blocks}$ is
+responsible for the generation of the statement blocks that correspond
+to the branches of a case statement. The parameters are the branch
+itself, the variable dictionnary $D$, the branch labeling function
+$lab$ and a label $l_f$ where the execution must proceed after
+completing the branch:
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{br, $D$, $lab$, $l_f$}{block} \isdef 
+  & \textbf{yields } \\
+  & \quad lab(\textsf{br}) \conc \texttt{":"} \conc \nl \conc  \\
+  & \quad \trad{br.body, $D$}{inst} \conc  \\
+  & \quad \texttt{"br "} \conc l_f \conc \nl \conc  \\
+  & \quad \trad{br.next, $D$, $lab$, $l_f$}{block}  \\
+  & \textbf{where } \textsf{br} \ne \bot \textbf{ and } \textsf{br.k} = \textsf{CaseBr}  \\
+  \trad{$\bot$, $D$, $lab$, $l_f$}{block} \isdef 
+  & \textbf{yields } \texttt{""}
+\end{split}
+\end{align}
+\end{framed}
+
+Finally, the following definition details the translation of the case
+instruction. First, the tested expression is evaluated, then a switch
+statement is emitted, including the jump table, followed by the
+translation of the different branches and ended with a label where all
+branches eventually jump to.
+
+\begin{framed}
+\begin{align}
+\begin{split}
+  \trad{i, $D$}{inst} \isdef 
+  & \textbf{let } lab = \trad{i.branches}{lab} \textbf{ and } p_e, l_e, t_e = \trad{i.exp, D}{exp} \textbf{ in} \\
+  & \textbf{let } l_d, l_f = \name, \name \textbf{ and } 
+  jumps = \trad{i.branches, $lab$}{jump} \textbf{ and }  \\
+  & \quad blocks = \trad{i.branches, $D$, $lab$, $l_f$}{block} \textbf{ in}  \\
+  & \textbf{yields }  \\
+  & \quad p_e \conc  \\
+  & \quad \texttt{"switch "} \conc t_e \conc \texttt{" "} \conc l_e \conc 
+  \texttt{ default } \conc l_d \conc \texttt{"["} \conc \nl  \\
+  & \quad \quad jumps \conc \texttt{"]"} \conc \nl  \\
+  & \quad blocks \conc  \\
+  & \quad l_f \conc \texttt{:} \conc \nl  \\
+  & \textbf{where } \textsf{i} \ne \bot \textbf{ and } \textsf{i.k} = \textsf{Case}
+\end{split}
+\end{align}
+\end{framed}
+
+As in the case of the if statement, the translation of the following 
+instruction initiates a new block, labeled with say \textit{next}. 
+Each branch of the case is translated to a block that ends with
+an unconditional jump \verb'br label' $\textit{next}$.
+
+% Case_instruction ::=
+% ``CASE'' Simple_term ``OF''
+% ``EITHER'' Simple_term +'','' ``THEN'' Instruction ( ``OR'' Simple_term +'','' ``THEN'' Instruction )* [ ``ELSE'' Instruction ]
+% ``END''
+% ``END''
+
+% The CASE substitution is used to define for a program, various
+% possible behaviors depending on the value of an expression. Each
+% EITHER and OR branch is made up of a non empty list of constants. The
+% values of constants in the set of branches must be distinct two by
+% two. If the value of the expression belongs to one of the branches,
+% then the substitution of this branch is executed. If not, the
+% substitution in the ELSE branch is applied, if this latter branch is
+% absent, it will by default perform the identity substitution. The
+% behavior of this substitution is therefore deterministic and always
+% feasible.
+
+%  ; Implement a jump table:
+%  switch i32 %val, label %otherwise [ i32 0, label %onzero
+%                                      i32 1, label %onone
+%                                      i32 2, label %ontwo ]
+
+\subsubsection{Assert}
+
+This instruction has no operational meaning and it needs not be
+translated (it might have some effect on the control flow graph, or
+may be translated for debugging purposes --- see debugging
+intrinsics). Rule~\ref{trad:id} handles this case.
+
+\section{Modularity}
+
+
+B method supported different types of modularity.
+The implementation modules can use the clauses: SEES, PROMOTES and IMPORT.
+
+
+
+\subsection{The SEES clause}
+
+Suppose a machine $M$ is seen from the implementation being translated
+to LLVM. For each constant, set, variable, and operation found in $M$,
+the LLVM code must include a corresponding declaration. As an
+illustration, consider the following C code:
+\begin{verbatim}
+extern int f(int, int, int *);
+extern char const k1;
+extern int k2;
+\end{verbatim}
+The corresponding LLVM produced by the C compiler is:
+\begin{verbatim}
+declare i32 @f(i32, i32, i32*)
+@k1 = external constant i8
+@k2 = external global i32
+\end{verbatim}
+
+[[TODO: to add and to explain the translation function]]
+
+\subsection{The IMPORT clause}
+
+In B, one module can be imported several times with different
+names creating instances of one module, this feature is called 
+``renaming" in C4B, but it is not supported in version 1.0. Based on
+the following C++ code, the state of each module can be stored in a LLVM
+structure. To represent an reference of module state, one pointer to this
+structure can be used. 
+\begin{verbatim}
+class CRectangle {
+    int x, y;  
+    };
+extern CRectangle vCRectangle;
+extern CRectangle *pCRectangle;
+\end{verbatim}
+The compiler produces the following LLVM:
+\begin{verbatim}
+%struct.CRectangle = type { i32, i32 }
+@pCRectangle = external global %struct.CRectangle* 
+@vCRectangle = external global %struct.CRectangle 
+\end{verbatim}
+
+Now to add support to renaming, all functions contain an first additional
+parameter that allow access data from imported module. This parameter
+is a pointer to structure that store the state of imported module.
+In practice, the translation of module called ``Data" will be based in following
+C code:
+\begin{verbatim}
+long Data__vint;
+struct R_1 { long elem1;long elem2; } Data__vstruct;
+void Data__INITIALISATION(void)
+{
+    Data__vint = 10;
+    Data__vstruct.elem1 = 1;
+    Data__vstruct.elem2 = 2;
+}
+void Data__get_vint( )
+{
+    return vint;
+}
+
+\end{verbatim}
+The result of translation creates a structure ``TStateData" with all
+variables of  module ``Data" to store the state of module, create a pointer
+to this structure and added this pointer as the first parameter in all functions of module.
+The return of a function is passed by last parameter as a pointer.
+\begin{verbatim}
+struct R_1 { long elem1;long elem2; } ;  
+struct TStateData { long vint;long vinterval; R_1 vstruct; } ;
+extern TStateData *pStateData; 
+void Data__INITIALISATION(TStateData * pStateData)
+{
+    pStateData->vint = 10;
+    pStateData->vstruct.elem1 = 1;
+    pStateData->vstruct.elem2 = 2;
+}
+void Data__get_vint(TStateData * pStateData, int * res1 )
+{
+    res1 = &pStateData->vint;
+}
+
+\end{verbatim}
+
+
+\begin{figure}[ht]
+
+\begin{minipage}{50in}
+\begin{verbatim}
+<how>
+   <to value="make" />
+   <this value="work" />
+</how>
+\end{verbatim}
+\end{minipage}
+
+
+\begin{tabular}[t]{l}
+\begin{minipage}{50in}
+\begin{verbatim}
+<how>
+   <to value="make" />
+   <this value="work" />
+</how>
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\begin{tabular}[t]{l}
+
+\end{tabular}
+
+ 
+\caption{Example.}
+\label{fig:kjdsldkjsa}
+\end{figure}
+
+[[TODO: Explain... ]]
+
+All the above examples are omitting informations about modularity,
+because it becomes the explanation more easy. However, the unique difference
+is when a variable is accessed then is needed add a parameter pointer to keep the state of module
+and to add parameter  to return.
+
+
+% This clause is supported only in Implementation ( The codes are compiled individually ) 
+
+
+The unique additional information is an parameter in functions that represent the 
+This parameter works as object of class.
+
+All the above examples are omitting informations about modularity,
+because it becomes the explanation more easy.
+
+%[[TODO: update the other sections based in this example.]]
+ 
+% The renaming of imported modules are not supported in C4B (version 1.0 ). 
+
+\begin{verbatim}
+	
+  // I added this definitions to support renaming
+  struct R_1 { long elem1;long elem2; } ;  // update this declaration to create the type of structures
+  struct TStateData { long vint;long vinterval; R_1 vstruct; } ; // Create this declaration to keep the state
+  extern TStateData vStateData; // Declare the variables
+  extern TStateData *pStateData; // Declare the variables
+
+/* Clause CONCRETE_CONSTANTS */
+/* Basic constants */
+/* Array and record constants */
+extern void Data__INITIALISATION(TStateData * pStateData);
+
+/* Clause OPERATIONS */
+
+extern void Data__set_vint(TStateData * pStateData);
+extern long Data__get_vint(TStateData * pStateData);
+\end{verbatim}
+
+
+% Why it no use the concept  class and objects ? 
+% Because it is owner compiler uses 
+
+
+\subsection{The PROMOTES clause}
+
+For each promoted operation, a sub-routine definition is generated.
+The definition is just a call to the sub-routine corresponding to
+the operation being promoted. As an inspiration, let us consider
+the following C code:
+\begin{verbatim}
+extern int f(int);
+
+int promote_f(int p)
+{
+  return f(p);
+}
+\end{verbatim}
+The compiler produces the following LLVM code:
+\begin{verbatim}
+define i32 @promote_f(i32 %p) nounwind uwtable ssp {
+  %1 = tail call i32 @f(i32 %p) nounwind
+  ret i32 %1
+}
+declare i32 @f(i32)
+\end{verbatim}
+Note that the function declaration found in the last line shall be
+emitted during the processing of the IMPORTS clause for the machine
+containing the promoted operation.
+
+\texttt{nounwind}: the called function never returns an unwind or exceptional
+control flow.
+
+\section{Completing the definition}
+
+This section is used to document a list of tasks to complete the
+definition of LLVM code generation from B0. It is based on the
+directory of tests for the C code generation tool ComenC.
+
+The ComenC tests are structured in directories. Each directory tests
+the support for some aspect of B0. For each such directory, the
+document summarizes the content of each test file and discuss how our
+LLVM code generation from B0 needs to be updated.
+
+\subsection{Directory OPERLOC}
+
+This directory is used to test and validate support for ``local operations''.
+
+Local operations are operations that are specified and implemented in
+the implementation: they do not refine an operation of the refined
+component, they are just a code structuring (factoring) construct. The
+specification is located in the "local\_operations" clause, and the
+implementation in the "operations clause. Local operations are only
+visible to the operations of the machine, and the generated LLVM code
+must include corresponding visibility directives.
+
+\subsubsection{Benchmark description}
+
+\begin{description} 
+
+\item[operloc\_comments] The implementation has
+local operations with comments.  
+
+\item[operloc\_empl\_oploc\_ds\_spec] The implementation has three bare
+no-op local operations
+
+\item[operloc\_emplacement1] The implementation has three local
+operations called in a refined operation.
+
+\item[operloc\_emplacement2] Implementation has three local operations,
+two refined operations, two local operations calling the third one.
+
+\item[operloc\_import] Implementation has one local operation, one
+imported machine with one operation, the local operations called the
+operation of the imported machine
+
+\item[operloc\_ordre1, operloc\_ordre2] Local operations calls other local
+operation(s) sometimes appearing further.
+
+\item[operloc\_params] Implementation has local operations with input
+and output parameters, and accessing a visible variable
+
+\item[operloc\_promues] The implementation refines an operation by
+  promoting an operation of an imported machine, the local operation
+  calls the promoted operation. The definition of the local operation
+  has a local variable and writes a concrete variable.
+
+\end{description}
+
+\subsubsection{Actions to handle benchmarks}
+
+\begin{enumerate}
+\item Emit the keyword \texttt{internal} in the signature of
+  operations that appear in the ``local\_operations'' clause.
+\item LLVM does not require declaration of sub-routines before their
+  use, so code generation shall not worry about ordering operation
+  definitions or emitting declarations.
+\item Considering promoted operations, it seems that declaring their
+  signature is sufficient. For the following C declaration:
+\begin{verbatim}
+  extern void promop(void);
+\end{verbatim}
+  the C compiler produces:
+\begin{verbatim}
+  declare void @promop()
+\end{verbatim}
+\item Optionally, check which local operations are actually (directly
+  or indirectly) referenced by refined operations; only emit code for
+  those operations that are used.
+\end{enumerate}
+
+\subsection{Directory ORDREDECL}
+
+This directory contains a single benchmark to test modularity constructs:
+\begin{description}
+\item[test\_ordre] Contains a development with a specification and an
+  implementation. The implementation contains imports, extends and
+  promotes clauses. Also the benchmark contains declarations of sets
+  (abstract and enumerated) and concrete constants (integers and
+  intervals).
+\end{description}
+
+For each abstract set, a LLVM type is generated. Eventually, if this
+abstract set is valued in a B development it will be an integer range.
+Since the size of this range remains undefined, there are two
+possibilities: 
+
+(i) either choose the largest possible integer type available
+in the LLVM platform, 
+
+(ii) or define it as an opaque type in LLVM (however those seem to be
+usually employed for forward declared structure in C or classes
+declarations in C++).
+
+
+
+\section{Next steps}
+
+Follows a list of tasks to be executed, in no particular order,
+and possibly concurrently, to complete this work:
+\begin{itemize}
+
+\item Specify code generation for a larger class of data types: arrays,
+records, integer intervals, enumerations.
+
+\item Specify modular code generation: sees, imports, extends...
+
+\item Case studies: check that LLVM code is processable by existing
+compilation tools.
+
+\item Verify if parse tree produced by BCompiler is close enough to 
+  the hypothetic parse tree used in the document. Possibly make adjustements
+  to rules to this reality.
+
+\item Validate ideas with manual production of LLVM source files from
+simple B0 implementations.
+
+\item Implement.
+
+\end{itemize}
+
+\end{document}
+
+\begin{align}
+IMPLEMENTATION & ::= "IMPLEMENTATION" Header \\
+& Clause_refines \\
+& Clause_implementation* \\
+& "END"
+\end{align}
+
+Clause_implementation ::= Clause_sees
+| Clause_imports
+| Clause_promotes
+| Clause_extends_B0
+| Clause_sets
+| Clause_concrete_constants
+| Clause_properties
+| Clause_values
+| Clause_concrete_variables
+| Clause_invariant
+| Clause_assertions
+| Clause_initialization_B0
+| Clause_operations_B0

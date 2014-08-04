@@ -1,0 +1,29 @@
+<project>
+  <developed>
+    <machine>enumeration</machine>
+    <implementation>enumeration_i</implementation>
+  </developed>
+  <developed>
+    <machine>array</machine>
+    <implementation>array_i</implementation>
+  </developed>
+  <developed>
+    <machine>counter</machine>
+    <implementation>counter_i</implementation>
+  </developed>
+ <developed>
+    <machine>swap</machine>
+    <implementation>swap_i</implementation>
+  </developed>
+  <developed>
+    <machine>timer</machine>
+    <implementation>timer_i</implementation>
+  </developed>
+  <developed>
+    <machine>wd</machine>
+    <implementation>wd_i</implementation>
+  </developed>
+  <base>
+  <machine>ioint</machine>
+  </base>
+</project>

@@ -1,0 +1,12 @@
+This directory contains the specification of the code generator in
+the file specification.pdf.
+
+The specification is complete in the sense that it fully supports
+a subset of the B implementation language.
+
+The specification is partial in the sense that some constructs of
+the B implementation language are not yet supported. 
+
+The specification will be updated with rules corresponding to the
+missing constructs.
+

@@ -1,0 +1,1338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  <title>Target LLVM Subset</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="author" content="Chris Lattner">
+  <meta name="description" content="LLVM Assembly Language Reference Manual.">
+  <link rel="stylesheet" href="LLVM-LangRef_files/llvm.css" type="text/css">
+</head>
+
+<body>
+
+<!-- Describe the typesetting conventions here. -->
+
+<!-- *********************************************************************** -->
+<h2><a name="identifiers">Identifiers</a></h2>
+<!-- *********************************************************************** -->
+
+<div>
+
+<p>LLVM identifiers come in two basic types: global and local. Global
+   identifiers (functions, global variables) begin with the <tt>'@'</tt>
+   character. Local identifiers (register names, types) begin with
+   the <tt>'%'</tt> character. Additionally, there are three different formats
+   for identifiers, for different purposes:</p>
+
+<ol>
+  <li>Named values are represented as a string of characters with their prefix.
+      For example, <tt>%foo</tt>, <tt>@DivisionByZero</tt>,
+      <tt>%a.really.long.identifier</tt>. The actual regular expression used is
+      '<tt>[%@][a-zA-Z$._][a-zA-Z$._0-9]*</tt>'.  Identifiers which require
+      other characters in their names can be surrounded with quotes. Special
+      characters may be escaped using <tt>"\xx"</tt> where <tt>xx</tt> is the
+      ASCII code for the character in hexadecimal.  In this way, any character
+      can be used in a name value, even quotes themselves.</li>
+
+  <li>Unnamed values are represented as an unsigned numeric value with their
+      prefix.  For example, <tt>%12</tt>, <tt>@2</tt>, <tt>%44</tt>.</li>
+
+  <li>Constants, which are described in a <a href="#constants">section about
+      constants</a>, below.</li>
+</ol>
+
+<p>Here is an example of LLVM code to multiply the integer variable
+   '<tt>%X</tt>' by 8:</p>
+
+<p>The easy way:</p>
+
+<pre class="doc_code">%result = <a href="#i_mul">mul</a> i32 %X, 8
+</pre>
+
+<p>After strength reduction:</p>
+
+<pre class="doc_code">%result = <a href="#i_shl">shl</a> i32 %X, i8 3
+</pre>
+
+<p>And the hard way:</p>
+
+<pre class="doc_code">%0 = <a href="#i_add">add</a> i32 %X, %X           <i>; yields {i32}:%0</i>
+%1 = <a href="#i_add">add</a> i32 %0, %0           <i>; yields {i32}:%1</i>
+%result = <a href="#i_add">add</a> i32 %1, %1
+</pre>
+
+<p>This last way of multiplying <tt>%X</tt> by 8 illustrates several important
+   lexical features of LLVM:</p>
+
+<ol>
+  <li>Comments are delimited with a '<tt>;</tt>' and go until the end of
+      line.</li>
+
+  <li>Unnamed temporaries are created when the result of a computation is not
+      assigned to a named value.</li>
+
+  <li>Unnamed temporaries are numbered sequentially</li>
+</ol>
+
+<!-- *********************************************************************** -->
+<h2><a name="highlevel">High Level Structure</a></h2>
+<!-- *********************************************************************** -->
+<div>
+<!-- ======================================================================= -->
+<h3>
+  <a name="modulestructure">Module Structure</a>
+</h3>
+
+<div>
+
+<p>LLVM programs are composed of <tt>Module</tt>s, each of which is a
+   translation unit of the input programs.  Each module consists of functions,
+   global variables, and symbol table entries.  Modules may be combined together
+   with the LLVM linker, which merges function (and global variable)
+   definitions, resolves forward declarations, and merges symbol table
+   entries. Here is an example of the "hello world" module:</p>
+
+<pre class="doc_code"><i>; Declare the string constant as a global constant.</i>&nbsp;
+<a href="#identifiers">@.str</a> = <a href="#linkage_private">private</a>&nbsp;<a href="#globalvars">unnamed_addr</a>&nbsp;<a href="#globalvars">constant</a>&nbsp;<a href="#t_array">[13 x i8]</a> c"hello world\0A\00"&nbsp;
+
+<i>; External declaration of the puts function</i>&nbsp;
+<a href="#functionstructure">declare</a> i32 @puts(i8* <a href="#nocapture">nocapture</a>) <a href="#fnattrs">nounwind</a>&nbsp;
+
+<i>; Definition of main function</i>
+define i32 @main() {   <i>; i32()* </i>&nbsp;
+  <i>; Convert [13 x i8]* to i8  *...</i>&nbsp;
+  %cast210 = <a href="#i_getelementptr">getelementptr</a> [13 x i8]* @.str, i64 0, i64 0
+
+  <i>; Call puts function to write out the string to stdout.</i>&nbsp;
+  <a href="#i_call">call</a> i32 @puts(i8* %cast210)
+  <a href="#i_ret">ret</a> i32 0&nbsp;
+}
+
+<i>; Named metadata</i>
+!1 = metadata !{i32 42}
+!foo = !{!1, null}
+</pre>
+
+<p>This example is made up of a <a href="#globalvars">global variable</a> named
+   "<tt>.str</tt>", an external declaration of the "<tt>puts</tt>" function,
+   a <a href="#functionstructure">function definition</a> for
+   "<tt>main</tt>" and <a href="#namedmetadatastructure">named metadata</a> 
+   "<tt>foo</tt>".</p>
+
+<p>In general, a module is made up of a list of global values (where both
+   functions and global variables are global values). Global values are
+   represented by a pointer to a memory location (in this case, a pointer to an
+   array of char, and a pointer to a function), and have one of the
+   following <a href="#linkage">linkage types</a>.</p>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="linkage">Linkage Types</a>
+</h3>
+
+<div>
+
+<p>All Global Variables and Functions have one of the following types of
+   linkage:</p>
+
+<dl>
+  <dt><tt><b><a name="linkage_available_externally">available_externally</a></b></tt></dt>
+  <dd>Globals with "<tt>available_externally</tt>" linkage are never emitted
+      into the object file corresponding to the LLVM module.  They exist to
+      allow inlining and other optimizations to take place given knowledge of
+      the definition of the global, which is known to be somewhere outside the
+      module.  Globals with <tt>available_externally</tt> linkage are allowed to
+      be discarded at will, and are otherwise the same as <tt>linkonce_odr</tt>.
+      This linkage type is only allowed on definitions, not declarations.</dd>
+
+  <dt><tt><b><a name="linkage_external">external</a></b></tt></dt>
+  <dd>If none of the above identifiers are used, the global is externally
+      visible, meaning that it participates in linkage and can be used to
+      resolve external symbol references.</dd>
+</dl>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="callingconv">Calling Conventions</a>
+</h3>
+
+<div>
+
+<p>LLVM <a href="#functionstructure">functions</a>, <a href="#i_call">calls</a>
+   and <a href="#i_invoke">invokes</a> can all have an optional calling
+   convention specified for the call.  The calling convention of any pair of
+   dynamic caller/callee must match, or the behavior of the program is
+   undefined.  The following calling conventions are supported by LLVM, and more
+   may be added in the future:</p>
+
+<dl>
+  <dt><b>"<tt>ccc</tt>" - The C calling convention</b>:</dt>
+  <dd>This calling convention (the default if no other calling convention is
+      specified) matches the target C calling conventions.  This calling
+      convention supports varargs function calls and tolerates some mismatch in
+      the declared prototype and implemented declaration of the function (as
+      does normal C).</dd>
+</dl>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="namedtypes">Named Types</a>
+</h3>
+
+<div>
+
+<p>LLVM IR allows you to specify name aliases for certain types.  This can make
+   it easier to read the IR and make the IR more condensed (particularly when
+   recursive types are involved).  An example of a name specification is:</p>
+
+<pre class="doc_code">%mytype = type { %mytype*, i32 }
+</pre>
+
+<p>You may give a name to any <a href="#typesystem">type</a> except
+   "<a href="#t_void">void</a>".  Type name aliases may be used anywhere a type
+   is expected with the syntax "%mytype".</p>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="globalvars">Global Variables</a>
+</h3>
+
+<div>
+
+<p>Global variables define regions of memory allocated at compilation time
+   instead of run-time.  Global variables may optionally be initialized, may
+   have an explicit section to be placed in, and may have an optional explicit
+   alignment specified..  A variable may be defined as a global
+   "constant," which indicates that the contents of the variable
+   will <b>never</b> be modified (enabling better optimization, allowing the
+   global data to be placed in the read-only section of an executable, etc).
+   Note that variables that need runtime initialization cannot be marked
+   "constant" as there is a store to the variable.</p>
+
+<p>LLVM explicitly allows <em>declarations</em> of global variables to be marked
+   constant, even if the final definition of the global is not.  This capability
+   can be used to enable slightly better optimization of the program, but
+   requires the language definition to guarantee that optimizations based on the
+   'constantness' are valid for the translation units that do not include the
+   definition.</p>
+
+<p>As SSA values, global variables define pointer values that are in scope
+   (i.e. they dominate) all basic blocks in the program.  Global variables
+   always define a pointer to their "content" type because they describe a
+   region of memory, and all memory objects in LLVM are accessed through
+   pointers.</p>
+
+</div>
+
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="functionstructure">Functions</a>
+</h3>
+
+<div>
+
+<p>LLVM function definitions consist of the "<tt>define</tt>" keyword, a return type, a function
+   name, a (possibly empty) argument list (each with optional
+   <a href="#paramattrs">parameter attributes</a>), an opening
+   curly brace, a list of basic blocks, and a closing curly brace.</p>
+
+<p>LLVM function declarations consist of the "<tt>declare</tt>" keyword, an
+   optional <a href="#linkage">linkage type</a>, an optional
+   <a href="#visibility">visibility style</a>, an optional
+   <a href="#callingconv">calling convention</a>,
+   an optional <tt>unnamed_addr</tt> attribute, a return type, an optional
+   <a href="#paramattrs">parameter attribute</a> for the return type, a function
+   name, a possibly empty list of arguments, an optional alignment, and an
+   optional <a href="#gc">garbage collector name</a>.</p>
+
+<p>A function definition contains a list of basic blocks, forming the CFG
+   (Control Flow Graph) for the function.  Each basic block may optionally start
+   with a label (giving the basic block a symbol table entry), contains a list
+   of instructions, and ends with a <a href="#terminators">terminator</a>
+   instruction (such as a branch or function return).</p>
+
+<p>The first basic block in a function is special in two ways: it is immediately
+   executed on entrance to the function, and it is not allowed to have
+   predecessor basic blocks (i.e. there can not be any branches to the entry
+   block of a function).  </p>
+
+<h5>Syntax:</h5>
+<pre class="doc_code">define 
+       &lt;ResultType&gt; @&lt;FunctionName&gt; ([argument list])
+       { ... }
+</pre>
+
+</div>
+
+<!-- *********************************************************************** -->
+<h2><a name="typesystem">Type System</a></h2>
+<!-- *********************************************************************** -->
+
+<div>
+
+<p>The LLVM type system is one of the most important features of the
+   intermediate representation.  Being typed enables a number of optimizations
+   to be performed on the intermediate representation directly, without having
+   to do extra analyses on the side before the transformation.  A strong type
+   system makes it easier to read the generated code and enables novel analyses
+   and transformations that are not feasible to perform on normal three address
+   code representations.</p>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="t_classifications">Type Classifications</a>
+</h3>
+
+<div>
+
+<p>The types fall into a few useful classifications:</p>
+
+<table border="1" cellpadding="4" cellspacing="0">
+  <tbody>
+    <tr><th>Classification</th><th>Types</th></tr>
+    <tr>
+      <td><a href="#t_integer">integer</a></td>
+      <td><tt>i1, i2, i3, ... i8, ... i16, ... i32, ... i64, ... </tt></td>
+    </tr>
+    <tr>
+      <td><a name="t_firstclass">first class</a></td>
+      <td>
+          <a href="#t_floating">integer</a>,
+          <a href="#t_pointer">pointer</a>,
+          <a href="#t_struct">structure</a>,
+          <a href="#t_label">label</a>.
+      </td>
+    </tr>
+    <tr>
+      <td><a href="#t_primitive">primitive</a></td>
+      <td><a href="#t_label">label</a>,
+          <a href="#t_void">void</a>,
+          <a href="#t_integer">integer</a>.
+      </td>
+    </tr>
+    <tr>
+      <td><a href="#t_derived">derived</a></td>
+      <td><a href="#t_function">function</a>,
+          <a href="#t_pointer">pointer</a>,
+          <a href="#t_struct">structure</a>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <a href="#t_firstclass">first class</a> types are perhaps the most
+   important.  Values of these types are the only ones which can be produced by
+   instructions.</p>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="t_primitive">Primitive Types</a>
+</h3>
+
+<div>
+
+<p>The primitive types are the fundamental building blocks of the LLVM
+   system.</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_integer">Integer Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The integer type is a very simple type that simply specifies an arbitrary
+   bit width for the integer type desired. Any bit width from 1 bit to
+   2<sup>23</sup>-1 (about 8 million) can be specified.</p>
+
+<h5>Syntax:</h5>
+<pre>  iN
+</pre>
+
+<p>The number of bits the integer will occupy is specified by the <tt>N</tt>
+   value.</p>
+
+<h5>Examples:</h5>
+<table class="layout">
+  <tbody><tr class="layout">
+    <td class="left"><tt>i1</tt></td>
+    <td class="left">a single-bit integer.</td>
+  </tr>
+  <tr class="layout">
+    <td class="left"><tt>i32</tt></td>
+    <td class="left">a 32-bit integer.</td>
+  </tr>
+  <tr class="layout">
+    <td class="left"><tt>i1942652</tt></td>
+    <td class="left">a really big integer of over 1 million bits.</td>
+  </tr>
+</tbody></table>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_void">Void Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The void type does not represent any value and has no size.</p>
+
+<h5>Syntax:</h5>
+<pre>  void
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_label">Label Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The label type represents code labels.</p>
+
+<h5>Syntax:</h5>
+<pre>  label
+</pre>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="t_derived">Derived Types</a>
+</h3>
+
+<div>
+
+<p>The real power in LLVM comes from the derived types in the system.  This is
+   what allows a programmer to represent functions, pointers, and other
+   useful types.  Each of these types contain one or more element types which
+   may be a primitive type, or another derived type.  .</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_aggregate">Aggregate Types</a>
+</h4>
+
+<div>
+
+<p>Aggregate Types are a subset of derived types that can contain multiple
+  member types. <a href="#t_struct">Structs</a> are aggregate types.</p>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_function">Function Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The function type can be thought of as a function signature.  It consists of
+   a return type and a list of formal parameter types. The return type of a
+   function type is a first class type or a void type.</p>
+
+<h5>Syntax:</h5>
+<pre>  &lt;returntype&gt; (&lt;parameter list&gt;)
+</pre>
+
+<p>...where '<tt>&lt;parameter list&gt;</tt>' is a comma-separated list of type
+   specifiers.  '<tt>&lt;returntype&gt;</tt>' is any type except
+   <a href="#t_label">label</a>.</p>
+
+<h5>Examples:</h5>
+<table class="layout">
+  <tbody><tr class="layout">
+    <td class="left"><tt>i32 (i32)</tt></td>
+    <td class="left">function taking an <tt>i32</tt>, returning an <tt>i32</tt>
+    </td>
+  </tr><tr class="layout">
+    <td class="left"><tt>{i32, i32} (i32)</tt></td>
+    <td class="left">A function taking an <tt>i32</tt>, returning a
+        <a href="#t_struct">structure</a> containing two <tt>i32</tt> values
+    </td>
+  </tr>
+</tbody></table>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_struct">Structure Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The structure type is used to represent a collection of data members together
+  in memory.  The elements of a structure may be any type that has a size.</p>
+
+<p>Structures in memory are accessed using '<tt><a href="#i_load">load</a></tt>'
+   and '<tt><a href="#i_store">store</a></tt>' by getting a pointer to a field
+   with the '<tt><a href="#i_getelementptr">getelementptr</a></tt>' instruction.
+
+<p>Structures can either be "literal" or "identified".  A literal structure is
+  defined inline with other types (e.g. <tt>{i32, i32}*</tt>) whereas identified
+  types are always defined at the top level with a name.  Literal types are
+  uniqued by their contents. Identified types are never uniqued.
+</p>
+  
+<h5>Syntax:</h5>
+<pre>  %T1 = type { &lt;type list&gt; }     <i>; Identified normal struct type</i>
+</pre>
+  
+<h5>Examples:</h5>
+<table class="layout">
+  <tbody><tr class="layout">
+    <td class="left"><tt>{ i32, i32, i32 }</tt></td>
+    <td class="left">A triple of three <tt>i32</tt> values</td>
+  </tr>
+</tbody></table>
+
+</div>
+  
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="t_pointer">Pointer Type</a>
+</h4>
+
+<div>
+
+<h5>Overview:</h5>
+<p>The pointer type is used to specify memory locations.
+   Pointers are commonly used to reference objects in memory.</p>
+   
+<p>Note that LLVM does not permit pointers to void (<tt>void*</tt>) nor does it
+   permit pointers to labels (<tt>label*</tt>).  Use <tt>i8*</tt> instead.</p>
+
+<h5>Syntax:</h5>
+<pre>  &lt;type&gt; *
+</pre>
+
+<h5>Examples:</h5>
+<table class="layout">
+  <tbody><tr class="layout">
+    <td class="left"><tt>i32 (i32*) *</tt></td>
+    <td class="left"> A <a href="#t_pointer">pointer</a> to a <a href="#t_function">function</a> that takes an <tt>i32*</tt>, returning an
+      <tt>i32</tt>.</td>
+  </tr>
+</tbody></table>
+
+</div>
+
+<!-- *********************************************************************** -->
+<h2><a name="constants">Constants</a></h2>
+<!-- *********************************************************************** -->
+
+<div>
+
+<p>LLVM has several different basic types of constants.  This section describes
+   them all and their syntax.</p>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="simpleconstants">Simple Constants</a>
+</h3>
+
+<div>
+
+<dl>
+  <dt><b>Boolean constants</b></dt>
+  <dd>The two strings '<tt>true</tt>' and '<tt>false</tt>' are both valid
+      constants of the <tt><a href="#t_integer">i1</a></tt> type.</dd>
+
+  <dt><b>Integer constants</b></dt>
+  <dd>Standard integers (such as '4') are constants of
+      the <a href="#t_integer">integer</a> type.  Negative numbers may be used
+      with integer types.</dd>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+<a name="aggregateconstants"></a> <!-- old anchor -->
+<a name="complexconstants">Complex Constants</a>
+</h3>
+
+<div>
+
+<p>Complex constants are a (potentially recursive) combination of simple
+   constants and smaller complex constants.</p>
+
+<dl>
+  <dt><b>Structure constants</b></dt>
+  <dd>Structure constants are represented with notation similar to structure
+      type definitions (a comma separated list of elements, surrounded by braces
+      (<tt>{}</tt>)).  For example: "<tt>{ i32 4, float 17.0, i32* @G }</tt>",
+      where "<tt>@G</tt>" is declared as "<tt>@G = external global i32</tt>".
+      Structure constants must have <a href="#t_struct">structure type</a>, and
+      the number and types of elements must match those specified by the
+      type.</dd>
+
+  <dt><b>Zero initialization</b></dt>
+  <dd>The string '<tt>zeroinitializer</tt>' can be used to zero initialize a
+      value to zero of <em>any</em> type, including scalar and
+      <a href="#t_aggregate">aggregate</a> types.
+      This is often used to avoid having to print large zero initializers
+      (e.g. for large arrays) and is always exactly equivalent to using explicit
+      zero initializers.</dd>
+
+</dl>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="globalconstants">Global Variable and Function Addresses</a>
+</h3>
+
+<div>
+
+<p>The addresses of <a href="#globalvars">global variables</a>
+   and <a href="#functionstructure">functions</a> are always implicitly valid
+   (link-time) constants.  These constants are explicitly referenced when
+   the <a href="#identifiers">identifier for the global</a> is used and always
+   have <a href="#t_pointer">pointer</a> type. For example, the following is a
+   legal LLVM file:</p>
+
+<pre class="doc_code">@X = global i32 17
+@Y = global i32 42
+</pre>
+
+</div>
+
+
+<!-- *********************************************************************** -->
+<h2><a name="instref">Instruction Reference</a></h2>
+<!-- *********************************************************************** -->
+
+<div>
+
+<p>The LLVM instruction set consists of several different classifications of
+   instructions: <a href="#terminators">terminator
+   instructions</a>, <a href="#binaryops">binary instructions</a>,
+   <a href="#memoryops">memory instructions</a>, and
+   <a href="#otherops">other instructions</a>.</p>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="terminators">Terminator Instructions</a>
+</h3>
+
+<div>
+
+<p>As mentioned <a href="#functionstructure">previously</a>, every basic block
+   in a program ends with a "Terminator" instruction, which indicates which
+   block should be executed after the current block is finished. These
+   terminator instructions typically yield a '<tt>void</tt>' value: they produce
+   control flow, not values (the one exception being the
+   '<a href="#i_invoke"><tt>invoke</tt></a>' instruction).</p>
+
+<p>The terminator instructions are: 
+   '<a href="#i_ret"><tt>ret</tt></a>', 
+   '<a href="#i_br"><tt>br</tt></a>',
+   '<a href="#i_switch"><tt>switch</tt></a>', 
+   '<a href="#i_indirectbr"><tt>indirectbr</tt></a>',
+   '<a href="#i_resume"><tt>resume</tt></a>', and 
+   '<a href="#i_unreachable"><tt>unreachable</tt></a>'.</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_ret">'<tt>ret</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+  ret void                 <i>; Return from void function</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>ret</tt>' instruction is used to return control flow from a function
+back to the caller.</p>
+
+<h5>Semantics:</h5>
+<p>When the '<tt>ret</tt>' instruction is executed, control flow returns back to
+   the calling function's context.  If the caller is a
+   "<a href="#i_call"><tt>call</tt></a>" instruction, execution continues at the
+   instruction after the call. </p>
+
+<h5>Example:</h5>
+<pre>
+  ret void                        <i>; Return from a void function</i>
+</pre>
+
+</div>
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_br">'<tt>br</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  br i1 &lt;cond&gt;, label &lt;iftrue&gt;, label &lt;iffalse&gt;
+  br label &lt;dest&gt;          <i>; Unconditional branch</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>br</tt>' instruction is used to cause control flow to transfer to a
+   different basic block in the current function.  There are two forms of this
+   instruction, corresponding to a conditional branch and an unconditional
+   branch.</p>
+
+<h5>Arguments:</h5>
+<p>The conditional branch form of the '<tt>br</tt>' instruction takes a single
+   '<tt>i1</tt>' value and two '<tt>label</tt>' values.  The unconditional form
+   of the '<tt>br</tt>' instruction takes a single '<tt>label</tt>' value as a
+   target.</p>
+
+<h5>Semantics:</h5>
+<p>Upon execution of a conditional '<tt>br</tt>' instruction, the '<tt>i1</tt>'
+   argument is evaluated.  If the value is <tt>true</tt>, control flows to the
+   '<tt>iftrue</tt>' <tt>label</tt> argument.  If "cond" is <tt>false</tt>,
+   control flows to the '<tt>iffalse</tt>' <tt>label</tt> argument.</p>
+
+<h5>Example:</h5>
+<pre>Test:
+  %cond = <a href="#i_icmp">icmp</a> eq i32 %a, %b
+  br i1 %cond, label %IfEqual, label %IfUnequal
+IfEqual:
+  <a href="#i_ret">ret</a> i32 1
+IfUnequal:
+  <a href="#i_ret">ret</a> i32 0
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+   <a name="i_switch">'<tt>switch</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  switch &lt;intty&gt; &lt;value&gt;, label &lt;defaultdest&gt; [ &lt;intty&gt; &lt;val&gt;, label &lt;dest&gt; ... ]
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>switch</tt>' instruction is used to transfer control flow to one of
+   several different places.  It is a generalization of the '<tt>br</tt>'
+   instruction, allowing a branch to occur to one of many possible
+   destinations.</p>
+
+<h5>Arguments:</h5>
+<p>The '<tt>switch</tt>' instruction uses three parameters: an integer
+   comparison value '<tt>value</tt>', a default '<tt>label</tt>' destination,
+   and an array of pairs of comparison value constants and '<tt>label</tt>'s.
+   The table is not allowed to contain duplicate constant entries.</p>
+
+<h5>Semantics:</h5>
+<p>The <tt>switch</tt> instruction specifies a table of values and
+   destinations. When the '<tt>switch</tt>' instruction is executed, this table
+   is searched for the given value.  If the value is found, control flow is
+   transferred to the corresponding destination; otherwise, control flow is
+   transferred to the default destination.</p>
+
+<h5>Implementation:</h5>
+<p>Depending on properties of the target machine and the particular
+   <tt>switch</tt> instruction, this instruction may be code generated in
+   different ways.  For example, it could be generated as a series of chained
+   conditional branches or with a lookup table.</p>
+
+<h5>Example:</h5>
+<pre> <i>; Emulate a conditional br instruction</i>
+ %Val = <a href="#i_zext">zext</a> i1 %value to i32
+ switch i32 %Val, label %truedest [ i32 0, label %falsedest ]
+
+ <i>; Emulate an unconditional br instruction</i>
+ switch i32 0, label %dest [ ]
+
+ <i>; Implement a jump table:</i>
+ switch i32 %val, label %otherwise [ i32 0, label %onzero
+                                     i32 1, label %onone
+                                     i32 2, label %ontwo ]
+</pre>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="binaryops">Binary Operations</a>
+</h3>
+
+<div>
+
+<p>Binary operators are used to do most of the computation in a program.  They
+   require two operands of the same type, execute an operation on them, and
+   produce a single value.  The result value
+   has the same type as its operands.</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_add">'<tt>add</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = add &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;          <i>; yields {ty}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>add</tt>' instruction returns the sum of its two operands.</p>
+
+<h5>Arguments:</h5>
+<p>The two arguments to the '<tt>add</tt>' instruction must
+   be <a href="#t_integer">integer</a>. Both arguments must have identical
+   types.</p>
+
+<h5>Semantics:</h5>
+<p>The value produced is the integer sum of the two operands.</p>
+
+<p>If the sum has unsigned overflow, the result returned is the mathematical
+   result modulo 2<sup>n</sup>, where n is the bit width of the result.</p>
+
+<p>Because LLVM integers use a two's complement representation, this instruction
+   is appropriate for both signed and unsigned integers.</p>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = add i32 4, %var          <i>; yields {i32}:result = 4 + %var</i>
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+   <a name="i_sub">'<tt>sub</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = sub &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;          <i>; yields {ty}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>sub</tt>' instruction returns the difference of its two
+   operands.</p>
+
+<p>Note that the '<tt>sub</tt>' instruction is used to represent the
+   '<tt>neg</tt>' instruction present in most other intermediate
+   representations.</p>
+
+<h5>Arguments:</h5>
+<p>The two arguments to the '<tt>sub</tt>' instruction must
+   be <a href="#t_integer">integer</a>. Both arguments must have identical
+   types.</p>
+
+<h5>Semantics:</h5>
+<p>The value produced is the integer difference of the two operands.</p>
+
+<p>If the difference has unsigned overflow, the result returned is the
+   mathematical result modulo 2<sup>n</sup>, where n is the bit width of the
+   result.</p>
+
+<p>Because LLVM integers use a two's complement representation, this instruction
+   is appropriate for both signed and unsigned integers.</p>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = sub i32 4, %var          <i>; yields {i32}:result = 4 - %var</i>
+  &lt;result&gt; = sub i32 0, %val          <i>; yields {i32}:result = -%var</i>
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_mul">'<tt>mul</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = mul &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;          <i>; yields {ty}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>mul</tt>' instruction returns the product of its two operands.</p>
+
+<h5>Arguments:</h5>
+<p>The two arguments to the '<tt>mul</tt>' instruction must
+   be <a href="#t_integer">integer</a>.  Both arguments must have identical
+   types.</p>
+
+<h5>Semantics:</h5>
+<p>The value produced is the integer product of the two operands.</p>
+
+<p>If the result of the multiplication has unsigned overflow, the result
+   returned is the mathematical result modulo 2<sup>n</sup>, where n is the bit
+   width of the result.</p>
+
+<p>Because LLVM integers use a two's complement representation, and the result
+   is the same width as the operands, this instruction returns the correct
+   result for both signed and unsigned integers.  If a full product
+   (e.g. <tt>i32</tt>x<tt>i32</tt>-&gt;<tt>i64</tt>) is needed, the operands should
+   be sign-extended or zero-extended as appropriate to the width of the full
+   product.</p>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = mul i32 4, %var          <i>; yields {i32}:result = 4 * %var</i>
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_sdiv">'<tt>sdiv</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = sdiv &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;         <i>; yields {ty}:result</i>
+  &lt;result&gt; = sdiv exact &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;   <i>; yields {ty}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>sdiv</tt>' instruction returns the quotient of its two operands.</p>
+
+<h5>Arguments:</h5>
+<p>The two arguments to the '<tt>sdiv</tt>' instruction must be
+   <a href="#t_integer">integer</a> or <a href="#t_vector">vector</a> of integer
+   values.  Both arguments must have identical types.</p>
+
+<h5>Semantics:</h5>
+<p>The value produced is the signed integer quotient of the two operands rounded
+   towards zero.</p>
+
+<p>Note that signed integer division and unsigned integer division are distinct
+   operations; for unsigned integer division, use '<tt>udiv</tt>'.</p>
+
+<p>Division by zero leads to undefined behavior. Overflow also leads to
+   undefined behavior; this is a rare case, but can occur, for example, by doing
+   a 32-bit division of -2147483648 by -1.</p>
+
+<p>If the <tt>exact</tt> keyword is present, the result value of the
+   <tt>sdiv</tt> is a <a href="#poisonvalues">poison value</a> if the result would
+   be rounded.</p>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = sdiv i32 4, %var          <i>; yields {i32}:result = 4 / %var</i>
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_srem">'<tt>srem</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = srem &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;   <i>; yields {ty}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>srem</tt>' instruction returns the remainder from the signed
+   division of its two operands. This instruction can also take
+   <a href="#t_vector">vector</a> versions of the values in which case the
+   elements must be integers.</p>
+
+<h5>Arguments:</h5>
+<p>The two arguments to the '<tt>srem</tt>' instruction must be
+   <a href="#t_integer">integer</a> or <a href="#t_vector">vector</a> of integer
+   values.  Both arguments must have identical types.</p>
+
+<h5>Semantics:</h5>
+<p>This instruction returns the <i>remainder</i> of a division (where the result
+   is either zero or has the same sign as the dividend, <tt>op1</tt>), not the
+   <i>modulo</i> operator (where the result is either zero or has the same sign
+   as the divisor, <tt>op2</tt>) of a value.
+   For more information about the difference,
+   see <a href="http://mathforum.org/dr.math/problems/anne.4.28.99.html">The
+   Math Forum</a>. For a table of how this is implemented in various languages,
+   please see <a href="http://en.wikipedia.org/wiki/Modulo_operation">
+   Wikipedia: modulo operation</a>.</p>
+
+<p>Note that signed integer remainder and unsigned integer remainder are
+   distinct operations; for unsigned integer remainder, use '<tt>urem</tt>'.</p>
+
+<p>Taking the remainder of a division by zero leads to undefined behavior.
+   Overflow also leads to undefined behavior; this is a rare case, but can
+   occur, for example, by taking the remainder of a 32-bit division of
+   -2147483648 by -1.  (The remainder doesn't actually overflow, but this rule
+   lets srem be implemented using instructions that return both the result of
+   the division and the remainder.)</p>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = srem i32 4, %var          <i>; yields {i32}:result = 4 % %var</i>
+</pre>
+
+</div>
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="memoryops">Memory Access and Addressing Operations</a>
+</h3>
+
+<div>
+
+<p>A key design point of an SSA-based representation is how it represents
+   memory.  In LLVM, no memory locations are in SSA form, which makes things
+   very simple.  This section describes how to read, write, and allocate
+   memory in LLVM.</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_alloca">'<tt>alloca</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = alloca &lt;type&gt;[, &lt;ty&gt; &lt;NumElements&gt;][, align &lt;alignment&gt;]     <i>; yields {type*}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>alloca</tt>' instruction allocates memory on the stack frame of the
+   currently executing function, to be automatically released when this function
+   returns to its caller. The object is always allocated in the generic address
+   space (address space zero).</p>
+
+<h5>Arguments:</h5>
+<p>The '<tt>alloca</tt>' instruction
+   allocates <tt>sizeof(&lt;type&gt;)*NumElements</tt> bytes of memory on the
+   runtime stack, returning a pointer of the appropriate type to the program.
+   If "NumElements" is specified, it is the number of elements allocated,
+   otherwise "NumElements" is defaulted to be one.  If a constant alignment is
+   specified, the value result of the allocation is guaranteed to be aligned to
+   at least that boundary.  If not specified, or if zero, the target can choose
+   to align the allocation on any convenient boundary compatible with the
+   type.</p>
+
+<p>'<tt>type</tt>' may be any sized type.</p>
+
+<h5>Semantics:</h5>
+<p>Memory is allocated; a pointer is returned.  The operation is undefined if
+   there is insufficient stack space for the allocation.  '<tt>alloca</tt>'d
+   memory is automatically released when the function returns.  The
+   '<tt>alloca</tt>' instruction is commonly used to represent automatic
+   variables that must have an address available.  When the function returns
+   (either with the <tt><a href="#i_ret">ret</a></tt>
+   or <tt><a href="#i_resume">resume</a></tt> instructions), the memory is
+   reclaimed.  Allocating zero bytes is legal, but the result is undefined.
+   The order in which memory is allocated (ie., which way the stack grows) is
+   not specified.</p>
+
+<p>
+
+</p><h5>Example:</h5>
+<pre>  %ptr = alloca i32                             <i>; yields {i32*}:ptr</i>
+  %ptr = alloca i32, i32 4                      <i>; yields {i32*}:ptr</i>
+  %ptr = alloca i32, i32 4, align 1024          <i>; yields {i32*}:ptr</i>
+  %ptr = alloca i32, align 1024                 <i>; yields {i32*}:ptr</i>
+</pre>
+
+</div>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_store">'<tt>store</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  store &lt;ty&gt; &lt;value&gt;, &lt;ty&gt;* &lt;pointer&gt;        <i>; yields {void}</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>store</tt>' instruction is used to write to memory.</p>
+
+<h5>Arguments:</h5>
+<p>There are two arguments to the '<tt>store</tt>' instruction: a value to store
+   and an address at which to store it.  The type of the
+   '<tt>&lt;pointer&gt;</tt>' operand must be a pointer to
+   the <a href="#t_firstclass">first class</a> type of the
+   '<tt>&lt;value&gt;</tt>' operand. </p>
+
+<h5>Semantics:</h5>
+<p>The contents of memory are updated to contain '<tt>&lt;value&gt;</tt>' at the
+   location specified by the '<tt>&lt;pointer&gt;</tt>' operand.  </p>
+
+<h5>Example:</h5>
+<pre>  %ptr = <a href="#i_alloca">alloca</a> i32                               <i>; yields {i32*}:ptr</i>
+  store i32 3, i32* %ptr                          <i>; yields {void}</i>
+  %val = <a href="#i_load">load</a> i32* %ptr                           <i>; yields {i32}:val = i32 3</i>
+</pre>
+
+</div>
+
+
+<!-- _______________________________________________________________________ -->
+<h4>
+   <a name="i_getelementptr">'<tt>getelementptr</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = getelementptr &lt;pty&gt;* &lt;ptrval&gt;, i32 &lt;idx&gt;
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>getelementptr</tt>' instruction is used to get the address of a
+   subelement of an <a href="#t_aggregate">aggregate</a> data structure.
+   It performs address calculation only and does not access memory.</p>
+
+<h5>Arguments:</h5>
+<p>The first argument is always a pointer 
+   and forms the basis of the
+   calculation. The remaining argument is the index that indicates which of the
+   elements of the aggregate object is indexed. The interpretation of the
+   index is dependent on the type being indexed into. The index always
+   indexes the pointer value given as the first argument.</p>
+
+<p>The type of each index argument depends on the type it is indexing into.
+   When indexing into a structure, only <tt>i32</tt>
+   integer <b>constants</b> are allowed.  </p>
+
+<p>For example, let's consider a C code fragment and how it gets compiled to
+   LLVM:</p>
+
+<pre class="doc_code">struct RT {
+  char A;
+  int B[10][20];
+  char C;
+};
+struct ST {
+  int X;
+  double Y;
+  struct RT Z;
+};
+
+int *foo(struct ST *s) {
+  return &amp;s[1].Z.B[5][13];
+}
+</pre>
+
+<p>The LLVM code generated by Clang is:</p>
+
+<pre class="doc_code">%struct.RT = <a href="#namedtypes">type</a> { i8, [10 x [20 x i32]], i8 }
+%struct.ST = <a href="#namedtypes">type</a> { i32, double, %struct.RT }
+
+define i32* @foo(%struct.ST* %s) nounwind uwtable readnone optsize ssp {
+entry:
+  %arrayidx = getelementptr inbounds %struct.ST* %s, i64 1, i32 2, i32 1, i64 5, i64 13
+  ret i32* %arrayidx
+}
+</pre>
+
+<h5>Semantics:</h5>
+<p>In the example above, the first index is indexing into the
+   '<tt>%struct.ST*</tt>' type, which is a pointer, yielding a
+   '<tt>%struct.ST</tt>' = '<tt>{ i32, double, %struct.RT }</tt>' type, a
+   structure. The second index indexes into the third element of the structure,
+   yielding a '<tt>%struct.RT</tt>' = '<tt>{ i8 , [10 x [20 x i32]], i8 }</tt>'
+   type, another structure. The third index indexes into the second element of
+   the structure, yielding a '<tt>[10 x [20 x i32]]</tt>' type, an array. The
+   two dimensions of the array are subscripted into, yielding an '<tt>i32</tt>'
+   type. The '<tt>getelementptr</tt>' instruction returns a pointer to this
+   element, thus computing a value of '<tt>i32*</tt>' type.</p>
+
+<p>Note that it is perfectly legal to index partially through a structure,
+   returning a pointer to an inner element.  Because of this, the LLVM code for
+   the given testcase is equivalent to:</p>
+
+<pre class="doc_code">define i32* @foo(%struct.ST* %s) {
+  %t1 = getelementptr %struct.ST* %s, i32 1                 <i>; yields %struct.ST*:%t1</i>
+  %t2 = getelementptr %struct.ST* %t1, i32 0, i32 2         <i>; yields %struct.RT*:%t2</i>
+  %t3 = getelementptr %struct.RT* %t2, i32 0, i32 1         <i>; yields [10 x [20 x i32]]*:%t3</i>
+  %t4 = getelementptr [10 x [20 x i32]]* %t3, i32 0, i32 5  <i>; yields [20 x i32]*:%t4</i>
+  %t5 = getelementptr [20 x i32]* %t4, i32 0, i32 13        <i>; yields i32*:%t5</i>
+  ret i32* %t5
+}
+</pre>
+
+
+<!-- ======================================================================= -->
+<h3>
+  <a name="otherops">Other Operations</a>
+</h3>
+
+<div>
+
+<p>The instructions in this category are the "miscellaneous" instructions, which
+   defy better classification.</p>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_icmp">'<tt>icmp</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = icmp &lt;cond&gt; &lt;ty&gt; &lt;op1&gt;, &lt;op2&gt;   <i>; yields {i1} or {&lt;N x i1&gt;}:result</i>
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>icmp</tt>' instruction returns a boolean value based on comparison
+of its two integer operands.</p>
+
+<h5>Arguments:</h5>
+<p>The '<tt>icmp</tt>' instruction takes three operands. The first operand is
+   the condition code indicating the kind of comparison to perform. It is not a
+   value, just a keyword. The possible condition code are:</p>
+
+<ol>
+  <li><tt>eq</tt>: equal</li>
+  <li><tt>ne</tt>: not equal </li>
+  <li><tt>ugt</tt>: unsigned greater than</li>
+  <li><tt>uge</tt>: unsigned greater or equal</li>
+  <li><tt>ult</tt>: unsigned less than</li>
+  <li><tt>ule</tt>: unsigned less or equal</li>
+  <li><tt>sgt</tt>: signed greater than</li>
+  <li><tt>sge</tt>: signed greater or equal</li>
+  <li><tt>slt</tt>: signed less than</li>
+  <li><tt>sle</tt>: signed less or equal</li>
+</ol>
+
+<p>The remaining two arguments must be <a href="#t_integer">integer</a> typed.
+They must also be identical types.</p>
+
+<h5>Semantics:</h5>
+<p>The '<tt>icmp</tt>' compares <tt>op1</tt> and <tt>op2</tt> according to the
+   condition code given as <tt>cond</tt>. The comparison performed always yields
+   either an <a href="#t_integer"><tt>i1</tt></a>, as follows:</p>
+
+<ol>
+  <li><tt>eq</tt>: yields <tt>true</tt> if the operands are equal,
+      <tt>false</tt> otherwise. No sign interpretation is necessary or
+      performed.</li>
+
+  <li><tt>ne</tt>: yields <tt>true</tt> if the operands are unequal,
+      <tt>false</tt> otherwise. No sign interpretation is necessary or
+      performed.</li>
+
+  <li><tt>ugt</tt>: interprets the operands as unsigned values and yields
+      <tt>true</tt> if <tt>op1</tt> is greater than <tt>op2</tt>.</li>
+
+  <li><tt>uge</tt>: interprets the operands as unsigned values and yields
+      <tt>true</tt> if <tt>op1</tt> is greater than or equal
+      to <tt>op2</tt>.</li>
+
+  <li><tt>ult</tt>: interprets the operands as unsigned values and yields
+      <tt>true</tt> if <tt>op1</tt> is less than <tt>op2</tt>.</li>
+
+  <li><tt>ule</tt>: interprets the operands as unsigned values and yields
+      <tt>true</tt> if <tt>op1</tt> is less than or equal to <tt>op2</tt>.</li>
+
+  <li><tt>sgt</tt>: interprets the operands as signed values and yields
+      <tt>true</tt> if <tt>op1</tt> is greater than <tt>op2</tt>.</li>
+
+  <li><tt>sge</tt>: interprets the operands as signed values and yields
+      <tt>true</tt> if <tt>op1</tt> is greater than or equal
+      to <tt>op2</tt>.</li>
+
+  <li><tt>slt</tt>: interprets the operands as signed values and yields
+      <tt>true</tt> if <tt>op1</tt> is less than <tt>op2</tt>.</li>
+
+  <li><tt>sle</tt>: interprets the operands as signed values and yields
+      <tt>true</tt> if <tt>op1</tt> is less than or equal to <tt>op2</tt>.</li>
+</ol>
+
+<h5>Example:</h5>
+<pre>  &lt;result&gt; = icmp eq i32 4, 5          <i>; yields: result=false</i>
+  &lt;result&gt; = icmp ne float* %X, %X     <i>; yields: result=false</i>
+  &lt;result&gt; = icmp ult i16  4, 5        <i>; yields: result=true</i>
+  &lt;result&gt; = icmp sgt i16  4, 5        <i>; yields: result=false</i>
+  &lt;result&gt; = icmp ule i16 -4, 5        <i>; yields: result=false</i>
+  &lt;result&gt; = icmp sge i16  4, 5        <i>; yields: result=false</i>
+</pre>
+
+<!-- _______________________________________________________________________ -->
+<h4>
+  <a name="i_call">'<tt>call</tt>' Instruction</a>
+</h4>
+
+<div>
+
+<h5>Syntax:</h5>
+<pre>  &lt;result&gt; = call &lt;ty&gt; &lt;fnptrval&gt;(&lt;function args&gt;)
+</pre>
+
+<h5>Overview:</h5>
+<p>The '<tt>call</tt>' instruction represents a simple function call.</p>
+
+<h5>Arguments:</h5>
+<p>This instruction requires several arguments:</p>
+
+<ol>
+  <li>'<tt>ty</tt>': the type of the call instruction itself which is also the
+      type of the return value.  Functions that return no value are marked
+      <tt><a href="#t_void">void</a></tt>.</li>
+
+  <li>'<tt>fnptrval</tt>': An LLVM value containing a pointer to a function to
+      be invoked. This is a direct function invocation.</li>
+
+  <li>'<tt>function args</tt>': argument list whose types match the function
+      signature argument types and parameter attributes. All arguments must be
+      of <a href="#t_firstclass">first class</a> type. If the function
+      signature indicates the function accepts a variable number of arguments,
+      the extra arguments can be specified.</li>
+
+</ol>
+
+<h5>Semantics:</h5>
+<p>The '<tt>call</tt>' instruction is used to cause control flow to transfer to
+   a specified function, with its incoming arguments bound to the specified
+   values. Upon a '<tt><a href="#i_ret">ret</a></tt>' instruction in the called
+   function, control flow continues with the instruction after the function
+   call, and the return value of the function is bound to the result
+   argument.</p>
+
+<h5>Example:</h5>
+<pre>  %retval = call i32 @test(i32 %argc)
+  call i32 (i8*, ...)* @printf(i8* %msg, i32 12, i8 42)        <i>; yields i32</i>
+</pre>
+
+<p>llvm treats calls to some functions with names and arguments that match the
+standard C99 library as being the C99 library functions, and may perform
+optimizations or generate code for them under that assumption.  This is
+something we'd like to change in the future to provide better support for
+freestanding environments and non-C-based languages.</p>
+
+</div>
+
+
+<!-- *********************************************************************** -->
+<hr>
+<address>
+  <a href="mailto:sabre@nondot.org">Chris Lattner</a><br>
+  <a href="http://llvm.org/">The LLVM Compiler Infrastructure</a><br>
+  Last modified: $Date: 2012-05-31 11:04:26 -0500 (Thu, 31 May 2012) $
+</address>
+
+
+</body></html>

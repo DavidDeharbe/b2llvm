@@ -1,0 +1,389 @@
+<Machine name='test1' type='abstraction'>
+<Operations>
+<Operation name='op1'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='&lt;='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op2'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='&lt;'>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op3'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='&gt;='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op4'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='&gt;'>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op5'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op6'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Expression_Comparison operator='/='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='op7'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+<Identifier value='in3' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='in1' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in2' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='in3' />
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Expression>
+<Binary_Predicate operator='or'>
+<Expression_Comparison operator='='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+<Unary_Predicate operator='not'>
+<Expression_Comparison operator='='>
+<Identifier value='in2' />
+<Identifier value='in3' />
+</Expression_Comparison>
+</Unary_Predicate>
+</Binary_Predicate>
+</Boolean_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

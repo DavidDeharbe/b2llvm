@@ -1,0 +1,31 @@
+/* Author: David */
+IMPLEMENTATION
+   thr_i
+REFINES
+   thr
+
+SEES
+   thrdef
+
+CONCRETE_VARIABLES
+   count
+
+INVARIANT
+    count : INT &
+    count : 0..maxval
+    
+INITIALISATION
+   count := 0
+
+OPERATIONS
+   ok <-- inc =
+   IF count < maxval
+   THEN
+       count := succ ( count );
+       ok := TRUE
+   ELSE
+       ok := FALSE
+   END
+
+
+END

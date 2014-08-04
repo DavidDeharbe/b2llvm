@@ -1,0 +1,46 @@
+/* Bubble_i
+ * Author: valerio
+ */
+IMPLEMENTATION
+   Bubble_i
+REFINES
+   Bubble
+CONCRETE_VARIABLES
+   vec1,sort1
+INVARIANT
+   vec1 : 0..99 --> 0..99 & sort1 : 0..1 &
+   vec = vec1 & sort1 = sort
+INITIALISATION
+   vec1(0) := 0  ;
+   sort1 := 0
+OPERATIONS
+   op_sort =
+   VAR nn, swapped, ii, tmp, vi, vi2 IN
+	swapped := 1;
+	nn := 100;
+	ii:=0;
+	WHILE swapped = 1 DO
+		swapped := 0;
+		ii:= 0;
+		nn:= nn-1;
+
+		WHILE ii<= nn DO
+		vi :=  vec1(ii);
+		vi2 := vec1(ii+1);
+		IF vi > vi2 THEN
+			tmp:= vec1(ii+1);
+			vec1(ii+1):=vec1(ii);
+			vec1(ii):=tmp;
+			swapped:= 1
+		END;
+		ii:= ii+1
+
+		INVARIANT 1>0
+		VARIANT nn-ii
+		END
+
+	INVARIANT 1>0
+	VARIANT nn-ii
+	END
+   END
+END

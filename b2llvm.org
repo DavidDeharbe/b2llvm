@@ -1,0 +1,81 @@
+#+ TITLE: b2llvm notes
+
+* Adding support for records and structures
+
+** Create a specific git branch "records"
+
+** Understand how records and structures are represented in BXML files.
+
+*** Structures (types)
+
+    BXML: 
+    {structure}: <Struct>{field}*</Struct>
+    {field}: <Record_Item label={name}>{type}</Record_Item>
+
+    AST:
+    {structure}: Structure > elements : seq Field
+    {field}: Field > id: {name} > type : {type}
+
+*** Records (values)
+
+    BXML:
+    {record}: <Record><Attributes><TypeInfo>{type}</TypeInfo></Attributes>{rec_field}*</Record>
+    {type}: see {structure}
+    {rec_field}: <Record_Item label={name}>{expression}</Record_Item>
+
+    AST:
+    {record}: Record > type:{structure} > values: seq {expression}
+
+*** Record item
+
+    BXML:
+    {select}: <Binary_Expression operator="&apos;">{base}{elem}</Binary_Expression>
+    {base}: {expression} (of type structure)
+    {elem}: <Identifier value={name}></Identifier>
+
+    AST:
+    {select}: RecField > base:{expression} (of type structure) > elem:{name}
+
+** TODO Identify and specify the needed families of AST nodes.
+   Artifacts: DOCUMENTATION/specification.tex
+
+   1. record: i.e. the type of data for records
+
+   2. struct: i.e. the actual records
+
+   3. field selection
+
+   4. record assignment: assignment of full record
+
+** TODO Get insight on the LLVM code that needs to be generated through
+   examples in C with struct.
+   Artifacts: C/pg5.c, C/pg5.llvm, possibly new C and LLVM files.
+
+** TODO Specify the code generation rules
+   Artifacts: DOCUMENTATION/specification.tex
+
+   1. record: aggregate type
+
+   2. struct: aggregate value
+
+   3. field selection: combination of getelementptr and load
+
+   4. record assignment: beware of atomicity issue:
+
+   r := struct(x_1: e_1; ... x_n: v_n) is essentially
+
+   LET v_1 = e_1 and ... e_n = v_n IN
+     r'x1 := v_1; ...; r'x_n := v_n
+   END
+
+** TODO Implement code generation.
+   
+   1. update Makefile and coverage script to include the examples
+
+   2. ast.py: implement new families of AST nodes
+
+   3. printer.py: implement pretty-printer for the new nodes
+
+   4. loadbxml.py: extend BXML loader to include new constructs
+
+   5. translate.py: implement code generation rules

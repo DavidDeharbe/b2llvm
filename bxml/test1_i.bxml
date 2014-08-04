@@ -1,0 +1,394 @@
+<Machine name='test1_i' type='implementation'>
+<Abstraction>test1</Abstraction>
+<Operations>
+<Operation name='op1'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='&lt;='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='op2'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='&lt;'>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='op3'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<Nary_Substitution operator=';'>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='&gt;='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Skip />
+</Else>
+</If_Substitution>
+</Nary_Substitution>
+</Body>
+</Operation>
+<Operation name='op4'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='&gt;'>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='op5'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='op6'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='/='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='op7'>
+<Output_Parameters>
+<Identifier value='res' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='in1' />
+<Identifier value='in2' />
+<Identifier value='in3' />
+</Input_Parameters>
+<Body>
+<If_Substitution>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='in1' />
+<Identifier value='in2' />
+</Expression_Comparison>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<If_Substitution elseif='yes'>
+<Condition>
+<Unary_Predicate operator='not'>
+<Expression_Comparison operator='='>
+<Identifier value='in2' />
+<Identifier value='in3' />
+</Expression_Comparison>
+</Unary_Predicate>
+</Condition>
+<Then>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Then>
+<Else>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='res' />
+</Variables>
+<Values>
+<Boolean_Litteral value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Litteral>
+</Values>
+</Affectation_Substitution>
+</Else>
+</If_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

@@ -1,0 +1,723 @@
+\documentclass[12pt,a4paper,draft]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage{hyperref}
+
+\usepackage{color} 		% it allows to add color in texts.
+
+\usepackage{latexsym}
+\usepackage{txfonts}  % it allows to add symbols
+
+
+\definecolor{gray}{rgb}{0.7,0.7,0.7}
+\definecolor{green}{rgb}{0.1,0.7,0.1}
+
+
+\begin{document}
+\include{comandos}
+
+[[[ TODO: to request authorization of Clearsy to publish this grammar. It is available at http://www.atelierb.eu/ressources/manrefb1.8.6.uk.pdf ]]]
+
+\section{ Grammar RB0}
+The grammar reduced B0 (RB0)  is based on B0 Grammar  provided by official manual of B language reference in BNF specification. 
+The next sections contain the grammar rules presented in \textit{top-down}. 
+The notation used in constructions are:
+\textcolor{gray}{gray constructs} are not translated, because they can be non deterministic or  no relevant to assembly code;
+\textbf{bold constructs} are reported; \texttt{typewriter constructs} are not supported yet.
+
+\subsection{Basic Constructions Grammar}
+
+\subsubsection{ B.1.1 Implementation }
+\footnotesize{
+\begin{sloppypar} 
+\noindent Implementation ::=\\
+\hspace*{0.20in} ``IMPLEMENTATION''\\
+\hspace*{0.20in} \textcolor{gray}{Header}\\
+\hspace*{0.20in} \textcolor{gray}{Clause\_refines}\\
+\hspace*{0.20in} Clause\_implementation*\\
+\hspace*{0.20in} ``END'' \\
+\end{sloppypar}}
+
+\subsubsection{B.1.2 Clauses}
+\footnotesize{
+\begin{sloppypar} 
+
+Clause\_implementation ::=\\
+\hspace*{0.20in} $|$ \texttt{Clause\_sees}\\
+\hspace*{0.20in} $|$ \texttt{Clause\_imports}\\
+\hspace*{0.20in} $|$ \texttt{Clause\_promotes}\\
+\hspace*{0.20in} $|$ \texttt{Clause\_extends\_B0} \\
+\hspace*{0.20in} $|$ \textcolor{gray}{Clause\_sets}\\
+\hspace*{0.20in} $|$ \textbf{Clause\_concrete\_constants}\\
+\hspace*{0.20in} $|$ Clause\_properties\\
+\hspace*{0.20in} $|$ Clause\_values\\
+\hspace*{0.20in} $|$ \textbf{Clause\_concrete\_variables}\\
+\hspace*{0.20in} $|$ \textcolor{gray}{Clause\_invariant}\\
+\hspace*{0.20in} $|$ \textcolor{gray}{Clause\_assertions}\\
+\hspace*{0.20in} $|$ \textbf{Clause\_initialization\_B0\\
+\hspace*{0.20in} $|$ Clause\_operations\_B0}\\
+\end{sloppypar}}
+
+\footnotesize{
+\begin{sloppypar}
+
+\noindent Clause\_constraints ::= \\
+\hspace*{0.20in}  "CONSTRAINTS" Predicate +"$\land$"\\
+Clause\_refines ::=\\ 
+\hspace*{0.20in}  "REFINES" Ident \\
+Clause\_IMPORTS ::= \\
+\hspace*{0.20in} IMPORTS ( [Ident"."]Ident  [ "(" Instanciation\_B0+"," ")" ] )+","\\
+Instanciation\_B0 := \\
+\hspace*{0.20in}    Term\\
+\hspace*{0.20in} $|$  Integer\_set\_B0\\
+\hspace*{0.20in} $|$  BOOL\\
+\hspace*{0.20in} $|$  Interval\\
+Clause\_sees ::= \\
+\hspace*{0.20in}  \texttt{"SEES" (Ident +"." ) +","}\\
+Clause\_includes ::= \\
+\hspace*{0.20in}  "INCLUDES" ( [Ident.]Ident  [ "(" Instanciation+","  ")" ] ) +","\\
+Instanciation := \\
+\hspace*{0.20in}    Terme\\
+\hspace*{0.20in} $|$  Integer\_set\\
+\hspace*{0.20in} $|$ "BOOL"\\
+\hspace*{0.20in} $|$  Interval \\
+Clause\_promotes ::= \\
+\hspace*{0.20in}   \texttt{"PROMOTES" ( Ident+"." )+","}\\
+\noindent Clause\_EXTENDS ::= \\
+\hspace*{0.20in}  "EXTENDS" ( [Ident"."]Ident  [ "(" Instantiating +","  ")" ] ) +","\\
+Clause\_EXTENDS\_B0 ::= \\
+\hspace*{0.20in}  "EXTENDS" ( [Ident"."]Ident  [ "(" Instanciing\_B0 +","  ")" ] ) +","\\
+Clause\_uses ::= \\
+\hspace*{0.20in}  "USES" ( [Ident"."]Ident ) +","\\
+Clause\_sets ::= \\
+\hspace*{0.20in}  "SETS" Set +";"\\
+Set ::= \\
+\hspace*{0.20in}  Ident \\
+\hspace*{0.20in} $|$ Ident  "="  "{" Ident +","  "}" \\
+Clause\_concrete\_constants ::= \\
+\hspace*{0.20in}  \textbf{"CONCRETE\_CONSTANTS"  Ident +","\\
+\hspace*{0.20in} $|$ "CONSTANTS"  Ident +","}\\
+Clause\_abstract\_constants ::= \\
+\hspace*{0.20in}  "ABSTRACT\_CONSTANTS"  Ident +","\\
+Clause\_properties ::= \\
+\hspace*{0.20in}  "PROPERTIES"  Predicate +"$\land$"\\
+Clause\_values ::= \\
+\hspace*{0.20in}  "VALUES"  Valuing +";"\\
+Valuation  ::= \\
+\hspace*{0.20in}  Ident  "="  Term\\
+\hspace*{0.20in} $|$ Ident  "="  "Bool" "(" Condition ")" \\
+\hspace*{0.20in} $|$ Ident  "="  Expr\_array\\
+\hspace*{0.20in} $|$ Ident  "="  Interval\_B0\\
+Clause\_concrete\_variables ::= \\
+\hspace*{0.20in}  \textbf{"CONCRETE\_VARIABLES"  ( Ident +"."  ) +","}\\
+Clause\_abstract\_variables ::= \\
+\hspace*{0.20in}  "ABSTRACT\_VARIABLES"  Ident +","\\
+\hspace*{0.20in} $|$ "VARIABLES" Ident +","\\
+Clause\_invariant ::= \\
+\hspace*{0.20in}  "INVARIANT"  Predicate +"$\land$"\\
+Clause\_assertions ::= \\
+\hspace*{0.20in}  "ASSERTIONS" Predicate +";"\\
+Clause\_initialization ::= \\
+\hspace*{0.20in}  "INITIALISATION" Substitution\\
+Clause\_initialization\_B0 ::= \\
+\hspace*{0.20in}  "INITIALISATION" \textbf{Instruction}\\
+Clause\_operations ::= \\
+\hspace*{0.20in}  "OPERATIONS"  Operation +";"\\
+Operation ::= \\
+\hspace*{0.20in}   \textbf{Header\_operation}  "="  Level1\_substitution\\
+   
+\noindent Header\_operation ::= \\
+\hspace*{0.20in}  \textbf{Ident +","  "$\leftarrow$"   Ident +"."   "(" Ident +"," ")" } \\  %   [ Ident +","  "$\leftarrow$"]  Ident +"."   [ "(" Ident +"," ")" ] \\   % a small adjust to latex support
+Clause\_operations\_B0 ::= \\
+\hspace*{0.20in}  "OPERATIONS" \textbf{ Operation\_B0} +";"\\
+Operation\_B0 ::= \\
+\hspace*{0.20in}   Header\_operation  "="  Level1\_instruction\\
+   
+   
+% B.1.3 Terms and Groups of Expressions
+\subsubsection{B.1.3 Terms and Groups of Expressions}
+\noindent Term  ::= \\
+   Simple\_term\\
+\hspace*{0.20in} $|$ Ident+"." "(" Term+"," ")"  \\
+\hspace*{0.20in} $|$  Arithmetical\_expression\\
+Simple\_term ::= \\
+  Ident+"."\\
+  \hspace*{0.20in} $|$ \textbf{ Integer\_lit\\
+\hspace*{0.20in} $|$  Boolean\_lit}\\
+Integer\_lit ::= \\
+\hspace*{0.20in} Integer\_literal \\
+\hspace*{0.20in} $|$ "MAXINT"\\
+\hspace*{0.20in} $|$ "MININT" \\
+Boolean\_lit ::= \textbf{"FALSE"\\
+\hspace*{0.20in} $|$ "TRUE"} \\
+Arithmetical\_expression ::= \\
+\hspace*{0.20in}  \textbf{ Integer\_lit\\
+\hspace*{0.20in} $|$  Ident +"."\\
+\hspace*{0.20in} $|$  Arithmetical\_expression  "+"  Arithmetical\_expression\\
+\hspace*{0.20in} $|$  Arithmetical\_expression  "-"  Arithmetical\_expression\\
+\hspace*{0.20in} $|$ "-" Arithmetical\_expression \\
+\hspace*{0.20in} $|$  Arithmetical\_expression  "$\times$"  Arithmetical\_expression\\
+\hspace*{0.20in} $|$  Arithmetical\_expression  "/"  Arithmetical\_expression\\
+\hspace*{0.20in} $|$  Arithmetical\_expression  "mod"  Arithmetical\_expression\\
+\hspace*{0.20in} $|$  Arithmetical\_expression } \\
+Expression\_arithmétique\\
+\hspace*{0.20in} $|$\textbf{ "succ" "(" Arithmetical\_expression ")"\\
+\hspace*{0.20in} $|$ "pred" "(" Arithmetical\_expression ")"} \\
+Expr\_array ::= \\
+\hspace*{0.20in}  Ident \\
+\hspace*{0.20in} $|$ "{" ( Simple\_term +"m"  "m" Term ) +","  "}" \\
+\hspace*{0.20in} $|$ ( Range +"$\times$" "$\times$"  "{" Term "}" ) +"$\lor$"\\
+Range ::= \\
+\hspace*{0.20in}  Ident \\
+\hspace*{0.20in} $|$  Interval\_B0\\
+\hspace*{0.20in} $|$ "{" Simple\_term +","  "}" \\
+Interval\_B0 ::= \\
+\hspace*{0.20in}  Arithmetical\_expression  ".."  Arithmetical\_expression \\
+\hspace*{0.20in} $|$  Integer\_set\_B0\\
+Integer\_set\_B0 ::= \\
+\hspace*{0.20in}  "NAT"\\
+\hspace*{0.20in} $|$ "NAT1"\\
+\hspace*{0.20in} $|$ "INT" \\
+
+\end{sloppypar} 
+}
+
+\subsubsection{B.1.4 Conditions }
+\footnotesize{
+\begin{sloppypar} 
+
+Condition ::= \\
+\hspace*{0.20in}   Simple\_term  "="  Simple\_term\\
+\hspace*{0.20in} $|$  Simple\_term  " $\ne$  "  Simple\_term\\
+\hspace*{0.20in} $|$  Simple\_term  " $<$  "  Simple\_term  \\
+\hspace*{0.20in} $|$  Simple\_term  "$>$"  Simple\_term  \\
+\hspace*{0.20in} $|$  Simple\_term  "$\leq$"  Simple\_term\\
+\hspace*{0.20in} $|$  Simple\_term  "$\geq$"  Simple\_term\\
+\hspace*{0.20in} $|$ \textbf{ Condition  "$\land$"  Condition\\
+\hspace*{0.20in} $|$  Condition  "$\lor$"  Condition\\
+\hspace*{0.20in} $|$ "$\neg$" "(" Condition ")"} \\
+ 
+\subsubsection{B.1.5 Instructions} 
+% B.1.5 Instructions 
+\noindent Instruction ::= \\
+\hspace*{0.20in}Level1\_instruction\\
+\hspace*{0.20in} $|$ \textbf{ Sequence\_instruction}\\
+Level1\_instruction ::= \\
+\hspace*{0.20in}\textbf{Block\_instruction\\
+\hspace*{0.20in} $|$  Var\_instruction}\\
+\hspace*{0.20in} $|$  Identity\_substitution\\
+\hspace*{0.20in} $|$\textbf{  Becomes\_equal\_instruction\\
+\hspace*{0.20in} $|$  Callup\_instruction\\
+\hspace*{0.20in} $|$  If\_instruction\\
+\hspace*{0.20in} $|$  Case\_instruction\\ 
+\hspace*{0.20in} $|$  Assert\_instruction\\
+\hspace*{0.20in} $|$  While\_substitution\\}
+Block\_instruction ::= \\
+\hspace*{0.20in}  "BEGIN"  Instruction  "END" \\
+Var\_instruction ::= \\
+\hspace*{0.20in}"VAR"  Ident+","  "IN"  Instruction  "END" \\
+Becomes\_equal\_instruction ::= \\
+\hspace*{0.20in}  Ident +"."  "(" Term +","  ")"  ":="  Term  \\   %  [ "(" Term +","  ")" ]  ":="  Term  \\ % small change to support
+\hspace*{0.20in} $|$ Ident+"."  ":= " Expr\_array  \\
+\hspace*{0.20in} $|$ Ident +"."   ":="  "bool" "(" Condition ")" \\
+Callup\_instruction ::= \\
+\hspace*{0.20in}  (Ident+".") +","  "$\leftarrow$"  Ident+"."  [ "(" (Term$|$ String\_lit) +","  ")" ] \\ %  \[ (Ident+".") +","  "$\leftarrow$" \]  Ident+"."  [ "(" (Term$|$ String\_lit) +","  ")" ] \\
+Sequence\_instruction ::= \\
+\hspace*{0.20in}Instruction  ";"  Instruction If\_instruction ::= \\
+\hspace*{0.20in}  "IF"  Condition  "THEN"  Instruction  \\
+\hspace*{0.20in}  ( "ELSIF"  Condition  "THEN"  Instruction )\\
+\hspace*{0.20in}* [ "ELSE"  Instruction ] \\
+  "END" \\
+Case\_instruction ::= \\
+\hspace*{0.20in}  "CASE"  Simple\_term  "OF"\\
+\hspace*{0.20in}  "EITHER"  Simple\_term +","\\
+\hspace*{0.20in}  "THEN"  Instruction  \\
+\hspace*{0.20in}  ( "OR"  Simple\_term +","   "THEN"  Instruction ) *\\
+\hspace*{0.20in}  ( "ELSE"  Instruction ) \\ % here , I replaced [ ] for ( ), because I had problems with latex
+\hspace*{0.20in}  "END"\\
+\hspace*{0.20in}  "END" \\
+  
+%  B.1.6 Predicates 
+\subsubsection{B.1.6 Predicates}
+\noindent Predicate ::= \\
+\hspace*{0.20in}   Bracketed\_predicate\\
+\hspace*{0.20in} $|$  Conjunction\_predicate\\
+\hspace*{0.20in} $|$  Negation\_predicate\\
+\hspace*{0.20in} $|$  Disjunction\_predicate\\
+\hspace*{0.20in} $|$  Implication\_predicate\\
+\hspace*{0.20in} $|$  Equivalence\_predicate\\
+\hspace*{0.20in} $|$  Universal\_predicate\\
+\hspace*{0.20in} $|$  Existential\_predicate\\
+\hspace*{0.20in} $|$  Equals\_predicate\\
+\hspace*{0.20in} $|$  Unequals\_predicate\\
+\hspace*{0.20in} $|$  Belongs\_predicate\\
+\hspace*{0.20in} $|$  Non\_belongs\_predicate\\
+\hspace*{0.20in} $|$  Inclusion\_predicate\\
+\hspace*{0.20in} $|$  Strict\_inclusion\_predicate\\
+\hspace*{0.20in} $|$  Non\_inclusion\_predicate\\
+\hspace*{0.20in} $|$  Non\_strict\_inclusion\_predicate\\
+\hspace*{0.20in} $|$  Less\_than\_or\_equal\_predicate\\
+\hspace*{0.20in} $|$  Strictly\_less\_than\_predicate\\
+\hspace*{0.20in} $|$  Greater\_or\_equal\_predicate\\
+\hspace*{0.20in} $|$  Strictly\_greater\_predicate\\
+Bracketed\_predicate ::= \\
+\hspace*{0.20in}"("  Predicate  ")" \\
+Conjunction\_predicate ::= \\
+\hspace*{0.20in} Predicate  "$\land$"  Predicate\\
+Negation\_predicate ::= \\
+\hspace*{0.20in}"$\neg$" "(" Predicate ")" \\
+Disjunction\_predicate ::= \\
+\hspace*{0.20in} Predicate  "$\lor$"  Predicate\\
+Implication\_predicate ::= \\
+\hspace*{0.20in} Predicate  "$\rightarrow$"  Predicate\\
+Equivalence\_predicate ::= \\
+\hspace*{0.20in} Predicate  "$\rightarrow$"  Predicate\\
+Predicate\_universel ::= \\
+\hspace*{0.20in}"$\forall$" List\_ident "." "(" Predicate  "$\rightarrow$"  Predicate ")" \\
+Existential\_predicate ::= \\
+\hspace*{0.20in}"$\exists$" List\_ident "." "(" Predicate ")" \\
+Equals\_predicate ::= \\
+\hspace*{0.20in} Expression  "="  Expression\\
+Predicate\_unequal ::= \\
+\hspace*{0.20in} Expression  "$\neq$"  Expression \\
+Belongs\_predicate ::= \\
+\hspace*{0.20in} Expression  "$\in$"  Expression\\
+Non\_belongs\_predicate ::= \\
+\hspace*{0.20in} Expression  "$\notin$"  Expression\\
+Predicate\_includes ::= \\
+\hspace*{0.20in} Expression  "$\subseteq$"  Expression\\
+Predicate\_includes\_strictly  ::= \\
+\hspace*{0.20in} Expression  "$\subset$"  Expression\\
+Non\_inclusion\_predicate ::= \\
+\hspace*{0.20in} Expression  "$\nsubset$"  Expression\\
+Non\_inclusion\_predicate\_strict ::= \\
+\hspace*{0.20in} Expression  "$\nsubseteq$"  Expression   \\
+Less\_than\_or\_equal\_predicate::= \\
+\hspace*{0.20in} Expression  "$\leq$"  Expression\\
+Strictly\_less\_than\_predicate ::= \\
+\hspace*{0.20in} Expression  "<"  Expression\\
+Preedicate\_greater\_than\_or\_equal ::= \\
+\hspace*{0.20in} Expression  "$\geq$"  Expression\\
+Strictly\_greater\_predicate\_than ::= \\
+\hspace*{0.20in} Expression  ">"  Expression\\
+
+\end{sloppypar} 
+}
+
+\subsubsection{B.1.7 Expressions }
+\footnotesize{
+\begin{sloppypar} 
+\noindent Expression ::= \\
+\hspace*{0.20in}   Expressions\_primary\\
+\hspace*{0.20in} $|$  Expressions\_Boolean\\
+\hspace*{0.20in} $|$  Expressions\_arithmetical\\
+\hspace*{0.20in} $|$  Expressions\_of\_couples\\
+\hspace*{0.20in} $|$  Expressions\_of\_sets\\
+\hspace*{0.20in} $|$  Construction\_of\_sets\\
+\hspace*{0.20in} $|$  Expressions\_of\_relations\\
+\hspace*{0.20in} $|$  Expressions\_of\_functionss\\
+\hspace*{0.20in} $|$  Construction\_of\_functionss\\
+\hspace*{0.20in} $|$  Expressions\_of\_sequences\\
+Expression\_primary ::= \\
+\hspace*{0.20in}   Data\\
+\hspace*{0.20in} $|$  Expr\_bracketed\\
+Expressions\_boolean ::= \\
+\hspace*{0.20in}   Boolean\_lit\\
+\hspace*{0.20in} $|$  Conversion\_Bool\\
+Expressions\_arithmetical ::= \\
+\hspace*{0.20in} \textbf{ Integer\_lit \\
+\hspace*{0.20in} $|$  Addition\\
+\hspace*{0.20in} $|$  Difference\\
+\hspace*{0.20in} $|$  Unary\_minus\\
+\hspace*{0.20in} $|$  Product\\
+\hspace*{0.20in} $|$  Division\\
+\hspace*{0.20in} $|$  Modulo\\
+\hspace*{0.20in} $|$  Power\_of\\
+\hspace*{0.20in} $|$  Successor\\
+\hspace*{0.20in} $|$  Predecessor}\\
+\hspace*{0.20in} $|$  Maximum\\
+\hspace*{0.20in} $|$  Minimum\\
+\hspace*{0.20in} $|$  Cardinal\\
+\hspace*{0.20in} $|$  Generalized\_sum\\
+\hspace*{0.20in} $|$  Generalized\_product\\
+Expressions\_of\_couple ::= \\
+\hspace*{0.20in}   Couple\\
+Expressions\_of\_sets ::= \\
+\hspace*{0.20in}   Empty\_set\\
+\hspace*{0.20in} $|$  Integer\_set\\
+\hspace*{0.20in} $|$  Boolean\_set\\
+\hspace*{0.20in} $|$  Strings\_set\\
+
+
+\noindent Construction\_of\_sets ::= \\
+\hspace*{0.20in} $|$  Product\\
+\hspace*{0.20in} $|$  Comprehension\_set\\
+\hspace*{0.20in} $|$  Subsets\\
+\hspace*{0.20in} $|$  Finite\_subsets\\
+\hspace*{0.20in} $|$  Set\_extension\\
+\hspace*{0.20in} $|$  Interval\\
+\hspace*{0.20in} $|$  Difference\\
+\hspace*{0.20in} $|$  Union\\
+\hspace*{0.20in} $|$  Intersection\\
+\hspace*{0.20in} $|$  Generalized\_union\\
+\hspace*{0.20in} $|$  Generalized\_intersection\\
+\hspace*{0.20in} $|$  Quantified\_union\\
+\hspace*{0.20in} $|$  Quantified\_intersection\\
+Expressions\_of\_relations ::= \\
+\hspace*{0.20in}   Relations\\
+\hspace*{0.20in} $|$  Identity\\
+\hspace*{0.20in} $|$  Reverse\\
+\hspace*{0.20in} $|$  First\_projection\\
+\hspace*{0.20in} $|$  Second\_projection\\
+\hspace*{0.20in} $|$  Composition\\
+\hspace*{0.20in} $|$  Direct\_product\\
+\hspace*{0.20in} $|$  Parallel\_product\\
+\hspace*{0.20in} $|$  Iteration\\
+\hspace*{0.20in} $|$  Reflexive\_closure\\
+\hspace*{0.20in} $|$  Closure\\
+\hspace*{0.20in} $|$  Domain\\
+\hspace*{0.20in} $|$  Range\\
+\hspace*{0.20in} $|$  Image\\
+\hspace*{0.20in} $|$  Restriction\\
+\hspace*{0.20in} $|$  Antirestriction\\
+\hspace*{0.20in} $|$  Corestriction\\
+\hspace*{0.20in} $|$  Anticorestriction\\
+\hspace*{0.20in} $|$  Overwrite\\
+Expressions\_of\_functionss ::= \\
+   Partial\_functions\\
+\hspace*{0.20in} $|$  Total\_functions\\
+\hspace*{0.20in} $|$  Partial\_injections\\
+\hspace*{0.20in} $|$  Total\_injections\\
+\hspace*{0.20in} $|$  Partial\_surjections\\
+\hspace*{0.20in} $|$  Total\_surjections\\
+\hspace*{0.20in} $|$  Total\_bijections\\
+Construction\_of\_functionss ::= \\
+   Lambda\_expression\\
+\hspace*{0.20in} $|$  Function\_constant\\
+\hspace*{0.20in} $|$  Evaluation\_functions\\
+\hspace*{0.20in} $|$  Transformed\_function\\
+\hspace*{0.20in} $|$  Transformed\_relation\\
+Expressions\_of\_sequences ::= \\
+   Sequences\\
+\hspace*{0.20in} $|$  Non\_empty\_sequences\\
+\hspace*{0.20in} $|$  Injective\_sequences\\
+\hspace*{0.20in} $|$  Non\_empty\_inj\_sequences\\
+\hspace*{0.20in} $|$  Permutations\\
+Construction\_of\_sequences ::= \\
+\hspace*{0.20in} $|$  Empty\_sequence\\
+\hspace*{0.20in} $|$  Sequence\_extension\\
+\hspace*{0.20in} $|$  Sequence\_size\\
+\hspace*{0.20in} $|$  Sequence\_first\_element\\
+\hspace*{0.20in} $|$  Sequence\_last\_element\\
+\hspace*{0.20in} $|$  Head\_sequence\\
+\hspace*{0.20in} $|$  Queue\_sequence\\
+\hspace*{0.20in} $|$  Reverse\_sequence\\
+\hspace*{0.20in} $|$  Concatenation\\
+\hspace*{0.20in} $|$  Insert\_start\\
+\hspace*{0.20in} $|$  Insert\_tail\\
+\hspace*{0.20in} $|$  Restrict\_head\\
+\hspace*{0.20in} $|$  Restrict\_tail\\
+\hspace*{0.20in} $|$  Generalized\_concat\\
+Data    ::= Ident+"." \\
+   \hspace*{0.20in} $|$ Ident+"."\$0 \\
+Expr\_bracketed  ::= "(" Expression ")" \\
+Boolean\_lit   ::=  \textbf{FALSE\\
+   \hspace*{0.20in} $|$  TRUE}\\
+Conversion\_Bool  ::= bool   "(" Predicate ")" \\
+Integer\_lit   ::= Integer\_literal \\
+   \hspace*{0.20in} $|$  MAXINT\\
+   \hspace*{0.20in} $|$  MININT\\
+Addition   ::=  Expression + Expression \\
+Difference   ::=  Expression - Expression \\
+Unary\_minus  ::= - Expression \\
+Product   ::=  Expression * Expression \\
+Division   ::=  Expression / Expression \\
+Modulo   ::=  Expression mod Expression \\
+Power\_of   ::=  Expression Expression \\
+Successor   ::=  succ ["(" Expression ")"] \\
+Predecessor   ::=  pred ["(" Expression ")"] \\
+Maximum   ::=  max "(" Expression ")" \\
+Minimum   ::=  min "(" Expression ")" \\
+Cardinal   ::= card "(" Expression ")" \\
+%Generalized\_sum  ::=  Σ List\_ident. "(" Predicate+$\land$$|$ Expression ")"  % supported below
+Generalized\_sum  ::=  $ \sum $ List\_ident. "(" Predicate+$\land$ $|$ Expression ")" \\
+%Generalized\_product ::=  Π List\_ident . "(" Predicate+$\land$$|$ Expression ")"  % supported below
+Generalized\_product ::=  $\prod$ List\_ident . "(" Predicate+$\land$ $|$ Expression ")" \\
+Couple   ::=  Expression m Expression \\
+\hspace*{0.20in}   $|$  Expression , Expression \\
+Empty\_set   ::=  Ø\\
+Integer\_set   ::=  Z\\
+  \hspace*{0.20in} $|$  N\\
+  \hspace*{0.20in} $|$  N1\\
+  \hspace*{0.20in} $|$  NAT\\
+  \hspace*{0.20in} $|$  NAT1\\
+  \hspace*{0.20in} $|$  INT\\
+Boolean\_set    ::=  BOOL\\
+Strings\_set   ::=  STRING\\
+Product   ::=  Expression $\times$ Expression \\
+Comprehension\_set ::= { Ident+","\hspace*{0.20in} $|$ Predicate+$\land$ } \\
+Subsets   ::=  P "(" Expression ")"\\
+   \hspace*{0.20in} $|$  P1 "(" Expression ")" \\
+Finite\_subsets  ::=  F "(" Expression ")"\\
+   \hspace*{0.20in} $|$  F1 "(" Expression ")" \\
+Set\_extension  ::= { Expression+"," } \\
+Interval   ::=  Expression .. Expression \\
+Difference   ::=  Expression - Expression\\ 
+Union     ::=  Expression $\cup$ Expression \\
+Intersection   ::=  Expression $\cap$ Expression \\
+Generalized\_union  ::= union "(" Expression ")" \\
+Generalized\_intersection ::= inter "(" Expression ")" \\
+Quantified\_union ::=  U List\_ident. "(" Predicate+$\land$ $|$ Expression ")" \\
+Quantified\_intersection ::=  I List\_ident. "(" Predicate+$\land$ $|$ Expression ")" \\
+Relations   ::=  Expression $\Leftrightarrow$ Expression \\
+Identity   ::= id "(" Expression ")" \\
+Reverse   ::=  Expression-1 \\
+First\_projection  ::= prj1 "("Expression , Expression")" \\
+Second\_projection   ::= prj2 "("Expression , Expression")" \\
+Composition   ::=  Expression ; Expression \\
+Direct\_product  ::=  Expression $\otimes$ Expression\\ 
+Parallel\_product  ::=  Expression || Expression \\
+Iteration    ::=  ExpressionExpression \\
+Reflexive\_closure   ::=  Expression* \\
+Closure    ::=  Expression+ \\
+Domain   ::=  dom "(" Expression ")" \\
+Range   ::=  ran "(" Expression ")" \\
+Image    ::=  Expression [ Expression ] \\
+Domain\_restriction   ::=  Expression r Expression \\
+Domain\_subtraction  ::=  Expression a Expression \\
+Range\_restriction   ::=  Expression R Expression \\
+Range\_subtraction   ::=  Expression A Expression \\
+Overwrite   ::=  Expression + Expression \\
+Partial\_functions  ::=  Expression 2 Expression \\
+Total\_functions  ::=  Expression 3 Expression \\
+Partial\_injections  ::=  Expression 4 Expression \\
+Total\_injections  ::=  Expression 5 Expression \\
+Partial\_surjections  ::= Expression 6 Expression \\
+Total\_surjections  ::=  Expression 7 Expression \\
+Total\_bijections   ::=  Expression 9 Expression \\
+%Lambda\_expression   ::= λ List\_ident . "(" Predicate$|$ Expression ")"  % supported below
+Lambda\_expression   ::= $\lambda$ List\_ident . "(" Predicate$|$ Expression ")" \\
+Evaluation\_functions   ::= Expression "(" Expression ")" \\
+Transformed\_function   ::= fnc "(" Expression ")" \\
+Transformed\_relation  ::= rel "(" Expression ")" \\
+Sequences    ::= seq "(" Expression ")" \\
+Non\_empty\_sequences  ::= seq1 "(" Expression ")" \\
+Injective\_sequences  ::= iseq "(" Expression ")" \\
+Non\_empty\_inj\_sequences  ::= iseq1 "(" Expression ")" \\
+Permutations   ::= perm "(" Expression ")" \\
+Empty\_sequence    ::= [] \\
+Sequence\_extension  ::= [ Expression+"," ] \\
+Sequence\_size   ::= size "(" Expression ")" \\
+Sequence\_first\_element  ::= first "(" Expression ")" \\
+Sequence\_last\_element  ::= last "(" Expression ")" \\
+Sequence\_front    ::= front "(" Expression ")" \\
+Sequence\_tail    ::= tail "(" Expression ")" \\
+Reverse\_sequence   ::= rev "(" Expression ")" \\
+Concatenation   ::=  Expression ) Expression \\
+Insert\_front    ::=  Expression k Expression \\
+Insert\_tail    ::=  Expression j Expression \\
+Restrict\_front   ::=  Expression q Expression \\
+Restrict\_tail    ::=  Expression w Expression \\
+Generalized\_concat  ::= conc "(" Expression ")" \\ 
+\end{sloppypar} 
+}
+
+\subsubsection{B.1.8 Substitutions }
+\footnotesize{
+\begin{sloppypar} 
+Substitution ::= \\ 
+   Level1\_substitution\\ 
+\hspace*{0.20in} $|$  Sequence\_substitution\\ 
+\hspace*{0.20in} $|$  Simultaneous\_substitution\\ 
+Level1\_substitution ::= \\ 
+   Block\_substitution\\ 
+\hspace*{0.20in} $|$  Identity\_substitution\\ 
+\hspace*{0.20in} $|$  Becomes\_equal\_substitution\\ 
+\hspace*{0.20in} $|$  Precondition\_substitution\\ 
+\hspace*{0.20in} $|$  Assertion\_substitution\\ 
+\hspace*{0.20in} $|$  Choice\_limited\_substitution\\ 
+\hspace*{0.20in} $|$  If\_substitution\\ 
+\hspace*{0.20in} $|$  Select\_substitution\\ 
+\hspace*{0.20in} $|$  Case\_substitution\\ 
+\hspace*{0.20in} $|$  Any\_substitution\\ 
+\hspace*{0.20in} $|$  Let\_substitution\\ 
+\hspace*{0.20in} $|$  Becomes\_elt\_substitution\\ 
+\hspace*{0.20in} $|$  Becomes\_such\_that\_substitution\\ 
+\hspace*{0.20in} $|$  Var\_substitution\\ 
+\hspace*{0.20in} $|$  Call\_up\_substitution\\ 
+\hspace*{0.20in} $|$  While\_substitution\\ 
+ \\ 
+Block\_substitution ::= \\ 
+  "BEGIN"  Substitution  "END" \\ 
+Identity\_substitution ::= \\ 
+  "skip"\\ 
+Substitution\_become\_equal ::= \\ 
+  ( Ident +"."  ) +","   ":="  Expression +","\\
+  \hspace*{0.20in} $|$ Ident +"."  "(" Expression +","  ")"  ":="  Expression \\ 
+Precondition\_substitution ::= \\ 
+  \hspace*{0.20in}   "PRE"  Predicate  "THEN"  Substitution  "END" \\ 
+Assertion\_substitution ::= \\ 
+  \hspace*{0.20in}  "ASSERT"  Predicate  "THEN"  Substitution  "END" \\ 
+Substitution\_limited\_choice ::= \\ 
+  \hspace*{0.20in}  "CHOICE" Substitution ( "OR" Substitution ) *  "END" \\ 
+If\_substitution ::= \\ 
+  \hspace*{0.20in}  "IF"  Predicate  "THEN"  Substitution\\ 
+  \hspace*{0.20in}   ( "ELSIF"  Predicate  "THEN"  Substitution  ) * \\   % here , I replaced [ ] for ( ), because I had problems with latex
+  \hspace*{0.20in}   ( "ELSE"  Substitution ) *  "END" \\   % here , I replaced [ ] for ( ), because I had problems with latex
+Select\_substitution ::= \\ 
+  \hspace*{0.20in}  "SELECT"  Predicate  "THEN"  Substitution \\ 
+  \hspace*{0.20in} ( "WHEN"  Predicate  "THEN"  Substitution )*\\ 
+  \hspace*{0.20in} ("ELSE"  Substitution )  "END"\\  % here , I replaced [ ] for ( ), because I had problems with latex 
+Substitute\_case ::= \\ 
+  \hspace*{0.20in}  "CASE"  Expression  "OF"\\ 
+  \hspace*{0.20in}   "EITHER"  Simple\_term +","    "THEN"  Substitution \\ 
+  \hspace*{0.20in}  ( "OR"  Simple\_term  +","   "THEN"  Substitution )+\\ 
+  \hspace*{0.20in}  ( "ELSE"  Substitution ) \\ % here , I replaced [ ] for ( ), because I had problems with latex 
+  \hspace*{0.20in}  "END" \\
+  \hspace*{0.20in}  "END" \\ 
+Any\_substitution ::= \\ 
+  \hspace*{0.20in}  "ANY"  Ident +","   "WHERE"  Predicate  "THEN"  Substitution  "END" \\ 
+Let\_substitution ::= \\ 
+  \hspace*{0.20in}  "LET"  Ident +","   "BE"\\    ( Ident  "="  Expression ) +"$\land$"   "IN"  Substitution  "END" \\ 
+Becomes\_elt\_substitution ::= \\ 
+  \hspace*{0.20in}  (Ident +"." ) +"," ":$\in$"  Expression\\ 
+Becomes\_such\_that\_substitution ::= \\ 
+  \hspace*{0.20in}  ( Ident +"."  ) +","   ":" "(" Predicate ")" \\ 
+Var\_substitution ::= \\ 
+  \hspace*{0.20in}  "VAR" Ident +","\\ 
+  \hspace*{0.20in} "IN" Substitution "END" \\ 
+Sequence\_substitution ::= \\ 
+  \hspace*{0.20in}   Substitution ";"  Substitution\\ 
+Substitution\_callup ::= \\ 
+  \hspace*{0.20in}    (Ident +"." ) +","  " $\leftarrow$ "   Ident +"."   "("  Expression +","  ")" \\  %    \[ (Ident +"." ) +","  " $\leftarrow$ " \]  Ident +"."  \[ "("  Expression +","  ")" \]\\ 
+While\_substitution ::= \\ 
+  \hspace*{0.20in}  "WHILE"  Condition  "DO"  Instruction \\ 
+  \hspace*{0.20in}  "INVARIANT"  Predicate \\ 
+  \hspace*{0.20in}  "VARIANT"  Expression  \\ 
+  \hspace*{0.20in}  "END" \\ 
+Simultaneous\_substitution ::= \\ 
+  \hspace*{0.20in}   Substitution  "$||$"  Substitution\\ 
+   \\ 
+\end{sloppypar}
+}
+   
+   
+\subsubsection{B.1.9 Useful Syntax Rule} 
+\footnotesize{
+\begin{sloppypar} 
+List\_ident ::=\\ 
+\hspace*{0.20in} Ident\\ 
+\hspace*{0.20in} $|$  ( Ident+"," )\\ 
+\end{sloppypar}
+}
+
+
+\subsubsection{B.1.10 Grammar of Typing Predicates} 
+[[TODO: to add some symbols]]
+\footnotesize{
+\begin{sloppypar} 
+
+
+Typing\_abstract\_data ::= \\ 
+\hspace*{0.20in}  Ident +","  "$\in$"  Expression +"$\times$"\\ 
+\hspace*{0.20in} $|$ Ident  "$\subseteq$"  Expression\\ 
+\hspace*{0.20in} $|$ Ident  "$\subset$"  Expression\\ 
+\hspace*{0.20in} $|$ Ident  "="  Expression \\ 
+Typing\_concrete\_cts ::= \\ 
+\hspace*{0.20in}   Ident +","   "$\in$"  Typing\_belonging\_concrete\_cts +"$\times$"\\
+\hspace*{0.20in} $|$ Ident  "="  Typing\_equals\_concrete\_cts  \\ 
+\hspace*{0.20in} $|$ Ident  "$\subseteq$"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ Ident  "$\subset$"  Simple\_set\\ 
+Typing\_belonging\_concrete\_data ::= \\ 
+\hspace*{0.20in}   Simple\_set \\
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"  "3"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"  "5"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set)+"$\times$"  "7"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set)+"$\times$"  "9"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ "{" Simple\_term+","   "}" \\ 
+Predicate\_typing\_equals\_concrete\_cts ::= \\ 
+\hspace*{0.20in} $|$  Term\\ 
+\hspace*{0.20in} $|$  Expr\_array \\ 
+\hspace*{0.20in} $|$  Interval\\ 
+\hspace*{0.20in} $|$   Integer\_set\_B0\\ 
+Simple\_set ::= \\ 
+\hspace*{0.20in}   Integer\_set\_B0\\ 
+\hspace*{0.20in} $|$ \textbf{"BOOL"} \\ 
+\hspace*{0.20in} $|$  Interval\\ 
+\hspace*{0.20in} $|$ Ident \\ 
+Integer\_set\_B0 ::=  \\ 
+\hspace*{0.20in}  "NAT" \\ 
+\hspace*{0.20in} $|$ "NAT1" \\ 
+\hspace*{0.20in} $|$ \textbf{"INT"} \\ 
+Expr\_array ::= \\ 
+\hspace*{0.20in}  Ident \\ 
+\hspace*{0.20in} $|$ "{" ( Simple\_term +"m"  "m" Term ) +","  "}" \\ 
+\hspace*{0.20in} $|$ ( Range +"$\times$"  "$\times$"  "{" Term "}" )+"$\cup$"\\ 
+Range ::= Ident \\ 
+\hspace*{0.20in} $|$  Interval\\ 
+\hspace*{0.20in} $|$ "{" Simple\_term +","  "}"\\ 
+Interval ::= \\ 
+\hspace*{0.20in}   Expression  ".."  Expression\\ 
+Typing\_concrete\_var ::= \\ 
+\hspace*{0.20in}  Ident +","   "$\in$"  Typing\_belonging\_concrete\_var +"$\times$"\\ 
+\hspace*{0.20in} $|$ Ident  "="  Term\\ 
+Typing\_belonging\_concrete\_data ::= \\ 
+\hspace*{0.20in}   Simple\_set\\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"  " "  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"   " "  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"   "$\rightarrow$"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"   " "  Simple\_set  \\ 
+\hspace*{0.20in} $|$ "{" Simple\_term +","  "}"\\ 
+ Typing\_param\_input ::= \\ 
+\hspace*{0.20in}  Ident +","   "$\in$"  Typing\_belonging\_input\_param +"$\times$"\\ 
+\hspace*{0.20in} $|$ Ident  "="  Term\\ 
+Typing\_belonging\_input\_param ::= \\ 
+\hspace*{0.20in}   Simple\_set\\ 
+\hspace*{0.20in} $|$ (Simple\_set)  +"$\times$"   "3"  Simple\_set  \\ 
+\hspace*{0.20in} $|$ (Simple\_set)  +"$\times$"   "5"  Simple\_set\\ 
+\hspace*{0.20in} $|$ (Simple\_set)  +"$\times$"   "7"  Simple\_set\\ 
+\hspace*{0.20in} $|$ (Simple\_set) +"$\times$"  "9"  Simple\_set\\ 
+\hspace*{0.20in} $|$ "{" Simple\_term +","  "}"\\ 
+\hspace*{0.20in} $|$ Set\_string\\ 
+Set\_string ::= \\ 
+\hspace*{0.20in}  "STRING" \\ 
+Typing\_param\_mch ::= \\ 
+\hspace*{0.20in} $|$ Ident +","   "$\in$"  Typing\_belonging\_param\_mch +"$\times$"\\ 
+\hspace*{0.20in} $|$ Ident +","   "="  Term +","\\ 
+Typing\_belonging\_param\_mch ::= \\ 
+\hspace*{0.20in}   Integer\_set\\ 
+\hspace*{0.20in} $|$ "BOOL" \\ 
+\hspace*{0.20in} $|$  Interval\\ 
+\hspace*{0.20in} $|$ Ident \\ 
+Integer\_set ::= \\ 
+\hspace*{0.20in}  "Z"\\ 
+\hspace*{0.20in} $|$ "N" \\ 
+\hspace*{0.20in} $|$ "N1" \\ 
+\hspace*{0.20in} $|$ "NAT" \\ 
+\hspace*{0.20in} $|$ "NAT1" \\ 
+\hspace*{0.20in} $|$ "INT" \\ 
+\end{sloppypar} 
+}
+
+\subsubsection{B.2 Grammar of B Types }
+\footnotesize{
+\begin{sloppypar} 
+
+Type ::=  Basic\_type\\ 
+ \hspace*{0.20in} $|$ "P"  "(" Type ")" \\ 
+ \hspace*{0.20in} $|$  Type  "$\times$"  Type \\ 
+\hspace*{0.20in} $|$ "struct" "(" (Ident ":" Type) +"," ")" \\ 
+\hspace*{0.20in} $|$ "(" Type ")" \\ 
+Basic\_type ::= \\ 
+\hspace*{0.20in}  "Z" \\ 
+\hspace*{0.20in} $|$ "BOOL"\\ 
+\hspace*{0.20in} $|$ "STRING"\\ 
+\hspace*{0.20in} $|$ Ident \\
+
+
+\end{sloppypar} 
+}
+\end{document}

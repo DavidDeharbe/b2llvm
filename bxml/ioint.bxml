@@ -1,0 +1,131 @@
+<Machine name='ioint' type='abstraction'>
+<Initialisation>
+<Skip />
+</Initialisation>
+<Operations>
+<Operation name='print_int'>
+<Input_Parameters>
+<Identifier value='num'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Input_Parameters>
+<Precondition>
+<Expression_Comparison operator=':'>
+<Identifier value='num'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Precondition>
+<Body>
+<Skip />
+</Body>
+</Operation>
+<Operation name='read_int'>
+<Output_Parameters>
+<Identifier value='num'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<ANY_Substitution>
+<Variables>
+<Identifier value='val'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Predicate>
+<Expression_Comparison operator=':'>
+<Identifier value='val'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Predicate>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='num'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Then>
+</ANY_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

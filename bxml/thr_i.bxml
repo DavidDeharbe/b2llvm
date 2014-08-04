@@ -1,0 +1,255 @@
+<Machine name='thr_i' type='implementation'>
+<Abstraction>thr</Abstraction>
+<Sees>
+<Referenced_Machine>
+<Name>thrdef</Name>
+</Referenced_Machine>
+</Sees>
+<Concrete_Constants>
+<Identifier value='maxval'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Concrete_Constants>
+<Concrete_Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Concrete_Variables>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Identifier value='maxval'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='inc'>
+<Output_Parameters>
+<Identifier value='ok'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+<B0Type>
+<Identifier value='BOOL' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='&lt;'>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='maxval'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Unary_Expression operator='succ'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Unary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='ok'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+<B0Type>
+<Identifier value='BOOL' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Boolean_Literal value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Then>
+<Else>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='ok'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+<B0Type>
+<Identifier value='BOOL' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Boolean_Literal value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Values>
+</Assignement_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

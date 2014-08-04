@@ -1,0 +1,786 @@
+<Machine name='timer_r' type='refinement'>
+<Abstraction>timer</Abstraction>
+<Sets>
+<Set>
+<Identifier value='STATE'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='STATE' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Enumerated_Values>
+<Identifier value='running'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='stopped'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Enumerated_Values>
+</Set>
+</Sets>
+<Concrete_Constants>
+<Identifier value='capacity'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Concrete_Constants>
+<Abstract_Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Abstract_Variables>
+<Initialisation>
+<Nary_Substitution operator='||'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='stopped'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Boolean_Literal value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='tick'>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='running'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Boolean_Literal value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Expression_Comparison>
+</Nary_Predicate>
+</Condition>
+<Then>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='capacity'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Boolean_Literal value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Values>
+</Assignement_Substitution>
+</Then>
+<Else>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Else>
+</If_Substitution>
+</Then>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='reset'>
+<Precondition>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='stopped'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Precondition>
+<Body>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Boolean_Literal value='FALSE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Body>
+</Operation>
+<Operation name='stop'>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='running'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='stopped'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='start'>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='stopped'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='running'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+<B0Type>
+<Identifier value='STATE' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='elapsed'>
+<Output_Parameters>
+<Identifier value='hours'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='minutes'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Boolean_Literal value='TRUE'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Boolean_Literal>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='hours'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='minutes'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Then>
+<Else>
+<VAR_IN>
+<Variables>
+<Identifier value='remaining_seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Body>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='hours'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='3600'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='remaining_seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='3600'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='minutes'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='remaining_seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='remaining_seconds'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Body>
+</VAR_IN>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='has_overflown'>
+<Output_Parameters>
+<Identifier value='answer'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+<B0Type>
+<Identifier value='BOOL' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='answer'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+<B0Type>
+<Identifier value='BOOL' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='overflow'>
+<Attributes>
+<TypeInfo>
+<Identifier value='BOOL' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

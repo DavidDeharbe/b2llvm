@@ -1,0 +1,637 @@
+<Machine name='bubble' type='abstraction'>
+<Abstract_Variables>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='sort'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Abstract_Variables>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='--&gt;'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='sort'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator='='>
+<Identifier value='sort'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+<Quantified_Predicate type='!'>
+<Variables>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Body>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='98'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='&lt;='>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Binary_Predicate>
+</Body>
+</Quantified_Predicate>
+</Binary_Predicate>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Nary_Substitution operator='||'>
+<Becomes_In>
+<Variables>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Value>
+<Binary_Expression operator='--&gt;'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Binary_Expression>
+</Value>
+</Becomes_In>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='sort'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='op_sort'>
+<Body>
+<ANY_Substitution>
+<Variables>
+<Identifier value='sorted_vector'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='sorted_vector'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='--&gt;'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+<Quantified_Predicate type='!'>
+<Variables>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Body>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='98'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='&lt;='>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='sorted_vector'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='sorted_vector'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='ii'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Binary_Predicate>
+</Body>
+</Quantified_Predicate>
+</Nary_Predicate>
+</Predicate>
+<Then>
+<Nary_Substitution operator='||'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='vec'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='sorted_vector'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Identifier value='INTEGER' />
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='sort'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Then>
+</ANY_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

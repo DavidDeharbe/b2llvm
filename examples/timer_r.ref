@@ -1,0 +1,68 @@
+/* Author: David. */
+REFINEMENT
+    timer_r
+REFINES
+    timer
+    
+ABSTRACT_VARIABLES
+    state ,
+    count ,
+    overflow
+    
+INITIALISATION
+    state := stopped ||
+    count := 0 ||
+    overflow := FALSE
+    
+OPERATIONS
+    tick =
+    IF ( state = running ) & ( overflow = FALSE )
+    THEN
+        IF ( count = capacity )
+        THEN
+            overflow := TRUE
+        ELSE
+            count := count + 1
+        END
+    END;
+    
+    reset =
+    PRE
+        state = stopped
+    THEN
+        count := 0;
+        overflow := FALSE
+    END;
+    
+    stop =
+    IF (state = running) THEN
+        state := stopped
+    END;
+    
+    start =
+    IF (state = stopped) THEN
+        state := running
+    END;
+    
+    hours , minutes , seconds <-- elapsed =
+    BEGIN
+        IF ( overflow = TRUE )
+        THEN
+            hours := 0;
+            minutes := 0;
+            seconds := 0
+        ELSE
+            VAR
+                remaining_seconds
+            IN
+                hours := count / 3600;
+                remaining_seconds := count mod 3600;
+                minutes := remaining_seconds / 60;
+                seconds := remaining_seconds mod 60
+            END
+        END    
+    END;
+    
+    answer <-- has_overflown =
+    answer := overflow
+END

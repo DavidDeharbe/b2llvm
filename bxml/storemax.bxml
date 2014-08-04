@@ -1,0 +1,312 @@
+<Machine name='storemax' type='abstraction'>
+<Abstract_Variables>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Abstract_Variables>
+<Invariant>
+<Expression_Comparison operator=':'>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Unary_Expression operator='POW'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Unary_Expression>
+</Expression_Comparison>
+</Invariant>
+<Initialisation>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<EmptySet>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Generic_Type />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</EmptySet>
+</Values>
+</Assignement_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='generate'>
+<Body>
+<ANY_Substitution>
+<Variables>
+<Identifier value='val'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Predicate>
+<Expression_Comparison operator=':'>
+<Identifier value='val'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Predicate>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='\/'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Unary_Expression operator='{'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Identifier value='val'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Unary_Expression>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Then>
+</ANY_Substitution>
+</Body>
+</Operation>
+<Operation name='upper'>
+<Output_Parameters>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Precondition>
+<Expression_Comparison operator='/='>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<EmptySet>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</EmptySet>
+</Expression_Comparison>
+</Precondition>
+<Body>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Unary_Expression operator='max'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Unary_Expression>
+</Values>
+</Assignement_Substitution>
+</Body>
+</Operation>
+<Operation name='lower'>
+<Output_Parameters>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Precondition>
+<Expression_Comparison operator='/='>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<EmptySet>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</EmptySet>
+</Expression_Comparison>
+</Precondition>
+<Body>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+<B0Type>
+<Identifier value='INTEGER' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Unary_Expression operator='min'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='numbers'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Unary_Expression>
+</Values>
+</Assignement_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

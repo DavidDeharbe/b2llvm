@@ -1,0 +1,20 @@
+
+Grammar/Grammar copy_old.tex
+
+Grammar/.gitignore
+
+*.aux
+
+*.log
+
+*.out
+
+translation.pdf
+
+*.toc
+
+*.pyc
+
+.coverage
+
+coverage_html

@@ -1,0 +1,259 @@
+<Machine name='array1' type='abstraction'>
+<Abstract_Variables>
+<Identifier value='arr' />
+</Abstract_Variables>
+<Invariant>
+<Expression_Comparison operator=':'>
+<Identifier value='arr' />
+<Binary_Expression operator='--&gt;'>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='1000'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Invariant>
+<Initialisation>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='arr' />
+</Variables>
+<Values>
+<Unary_Expression operator='{'>
+<Binary_Expression operator='|-&gt;'>
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Unary_Expression>
+</Values>
+</Affectation_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='set'>
+<Input_Parameters>
+<Identifier value='ix' />
+<Identifier value='tt' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ix' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='tt' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='1000'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='arr' />
+</Variables>
+<Values>
+<Binary_Expression operator='&lt;+'>
+<Identifier value='arr' />
+<Unary_Expression operator='{'>
+<Binary_Expression operator='|-&gt;'>
+<Identifier value='ix' />
+<Identifier value='tt' />
+</Binary_Expression>
+</Unary_Expression>
+</Binary_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='read'>
+<Output_Parameters>
+<Identifier value='tt' />
+</Output_Parameters>
+<Input_Parameters>
+<Identifier value='ix' />
+</Input_Parameters>
+<Precondition>
+<Expression_Comparison operator=':'>
+<Identifier value='ix' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='tt' />
+</Variables>
+<Values>
+<Binary_Expression operator='('>
+<Identifier value='arr' />
+<Identifier value='ix' />
+</Binary_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+<Operation name='swap'>
+<Input_Parameters>
+<Identifier value='ix' />
+<Identifier value='jx' />
+</Input_Parameters>
+<Precondition>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ix' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='jx' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Precondition>
+<Body>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='arr' />
+</Variables>
+<Values>
+<Binary_Expression operator='&lt;+'>
+<Identifier value='arr' />
+<Unary_Expression operator='{'>
+<Binary_Expression operator=','>
+<Binary_Expression operator='|-&gt;'>
+<Identifier value='ix' />
+<Binary_Expression operator='('>
+<Identifier value='arr' />
+<Identifier value='jx' />
+</Binary_Expression>
+</Binary_Expression>
+<Binary_Expression operator='|-&gt;'>
+<Identifier value='jx' />
+<Binary_Expression operator='('>
+<Identifier value='arr' />
+<Identifier value='ix' />
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+</Unary_Expression>
+</Binary_Expression>
+</Values>
+</Affectation_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

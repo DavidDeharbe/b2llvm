@@ -1,0 +1,12 @@
+
+%counter_i$\char36$state$\char36$ = type {i32, i1}
+define void @counter_i$init$(%counter_i$state$* %self$) {
+entry:
+  %0 = getelementptr %counter_i$state$* %self$, i32 0, i32 0
+  store i32 0, i32* %0
+  %1 = getelementptr %counter_i$state$* %self$, i32 0, i32 1
+  store i1 0, i1* %1
+  br label %exit
+exit:
+  ret void
+

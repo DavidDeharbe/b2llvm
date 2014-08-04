@@ -1,0 +1,90 @@
+/* Author: David Deharbe. */
+IMPLEMENTATION
+    timer_i
+REFINES
+    timer_r
+IMPORTS
+    hh.counter, mm.counter, ss.counter
+VALUES
+    capacity = (24 * 60 * 60) - 1
+CONCRETE_VARIABLES
+    is_running, overflow
+INVARIANT
+    is_running : BOOL & overflow : BOOL &
+    ((state = running) <=> (is_running = TRUE)) &
+    count = (hh.value * 3600 + mm.value * 60 + ss.value)
+    
+INITIALISATION
+    is_running := FALSE;
+    overflow := FALSE
+    
+OPERATIONS
+    tick =
+    IF ( is_running = TRUE ) & ( overflow = FALSE )
+    THEN
+        VAR hours, minutes, seconds IN
+            hours <-- hh.get;
+            minutes <-- mm.get;
+            seconds <-- ss.get;
+            IF (seconds < 59) THEN
+                ss.inc
+            ELSE
+                BEGIN
+                    ss.zero;
+                    IF (minutes < 59) THEN
+                        mm.inc
+                    ELSE
+                        BEGIN
+                            mm.zero;
+                            hh.inc
+                        END
+                    END
+                END
+            END
+        END
+    END
+    ;
+    
+    reset =
+    BEGIN
+        hh.zero;
+        mm.zero;
+        ss.zero;
+        overflow := FALSE
+    END
+    ;
+    
+    stop =
+    IF ( is_running = TRUE)
+    THEN
+        is_running := FALSE
+    END
+    ;
+    
+    start =
+    IF ( is_running = FALSE )
+    THEN
+        is_running := TRUE
+    END
+    ;
+    
+    hours , minutes , seconds <-- elapsed =
+    BEGIN
+        IF ( overflow = TRUE )
+        THEN
+            hours := 0 ;
+            minutes := 0 ;
+            seconds := 0
+        ELSE
+            hours <-- hh.get;
+            minutes <-- mm.get;
+            seconds <-- ss.get
+        END
+    END
+    ;
+    
+    answer <-- has_overflown =
+    answer := overflow
+    
+    
+END

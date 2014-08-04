@@ -1,0 +1,363 @@
+
+\section*{Attachments}
+
+\subsection{Structure examples}
+
+The following code example is defining a structure:\\
+\begin{pascalcode}
+MACHINE Rec
+SETS
+ ID={aa,bb}
+VARIABLES xx, bank, total
+INVARIANT
+ xx : struct(name : ID, balance : NAT) & bank : struct(name : ID) &
+ total:struct(money:NAT)
+INITIALISATION 
+ bank := rec(name:bb) ||
+ xx:= rec(name:aa, balance:10) ||
+ total := rec(money:20)
+OPERATIONS
+
+  res<--positive = 
+  PRE xx'balance > 0 THEN
+  res:=TRUE
+  END;
+
+  withrdaw(amt) = 
+  PRE amt:NAT1 & (xx'balance >= amt) THEN
+     xx := rec(name:xx'name, balance:(xx'balance - amt))
+  END;
+  
+  unsafe_dec = 
+  BEGIN
+       xx'balance := xx'balance - 1
+  END
+END
+\end{pascalcode}
+
+
+\begin{pascalcode}
+IMPLEMENTATION
+    Rec_i
+
+REFINES
+    Rec
+
+CONCRETE_VARIABLES
+   xx ,
+   bank ,
+   total
+
+INITIALISATION
+   
+   bank := rec(name:bb) ;
+   xx := rec(name:aa, balance:10) ;
+   total :=rec(money:20)
+OPERATIONS
+  res<--positive = 
+  IF xx'balance > 0 THEN
+       res:= TRUE 
+  ELSE res := FALSE
+  END;
+
+  withrdaw(amt) = IF   amt >=0 & amt <= MAXINT & (xx'balance >= amt) THEN 
+     xx := rec(name:xx'name, balance:(xx'balance - amt))
+  END;
+
+  unsafe_dec = BEGIN
+       xx'balance := xx'balance -1 
+  END
+END
+\end{pascalcode}
+
+
+
+
+\subsection{Arrays examples}
+
+A generic example available at repository ProB\footnote{
+\url{https://github.com/bendisposto/probparsers/blob/develop/bparser/src/test/resources/parsable/Array.mch}}. 
+This example can be used in approach using imported components.
+
+
+\subsection{A  simple example and its LLVM}
+
+\begin{pascalcode}
+MACHINE
+   Array
+VARIABLES arr
+
+INVARIANT 
+    arr : ((0..99) --> 0..1000)
+
+INITIALISATION arr := {1|->100}
+
+OPERATIONS 
+
+set(ix,tt)=
+        PRE ix : (0..99) & tt : (0..1000)
+        THEN arr := arr <+ {ix |-> tt}
+        END ;
+
+tt <-- read(ix) =
+        PRE ix : (0..99)
+        THEN tt := arr(ix)
+        END;
+
+swap(ix, jx)=
+        PRE ix : (0..99) & jx : (0..99)
+        THEN arr := arr <+ {ix |-> arr(jx), jx|-> arr(ix)}
+        END
+
+END
+\end{pascalcode}
+
+\begin{pascalcode}
+IMPLEMENTATION 
+   Array_i
+REFINES
+   Array
+CONCRETE_VARIABLES
+   arr
+INVARIANT 
+    arr :  ((0..99) --> 0..1000)
+INITIALISATION
+   arr(1) := 100
+OPERATIONS
+   set ( ix , tt ) =
+   IF
+       ix >= 0 & ix <=99 & tt >= 0  & tt <= 1000
+   THEN
+       
+      arr(ix) := tt 
+   END;
+
+   tt <-- read ( ix ) =
+   IF
+       ix >= 0 & ix <=99
+   THEN
+       tt := arr ( ix )
+   ELSE
+       tt := 0
+   END;
+
+   swap ( ix , jx ) =
+   IF
+        ix >= 0 & ix <=99 & jx >= 0 & jx <=99 
+   THEN
+
+       VAR temp IN
+           temp := arr(jx);
+           arr(jx) := arr(ix);
+           arr(ix) := temp
+       END
+   END
+END
+\end{pascalcode}
+
+\begin{pascalcode}
+@Array__arr = internal global [100 x i32] zeroinitializer, align 16
+
+define void @Array__INITIALISATION() nounwind ssp {
+  store i32 100, i32* getelementptr  ([100 x i32]* @Array__arr, i32 0, i64 1)
+  ret void
+}
+
+define void @Array__set(i32 %ix, i32 %tt) nounwind ssp {
+  %1 = alloca i32
+  %2 = alloca i32
+  store i32 %ix, i32* %1
+  store i32 %tt, i32* %2
+  %3 = load i32* %1
+  %4 = icmp sge i32 %3, 0
+  br i1 %4, label %5, label %19
+
+; <label>:5                                       ; preds = %0
+  %6 = load i32* %1
+  %7 = icmp sle i32 %6, 99
+  br i1 %7, label %8, label %19
+
+; <label>:8                                       ; preds = %5
+  %9 = load i32* %2
+  %10 = icmp sge i32 %9, 0
+  br i1 %10, label %11, label %19
+
+; <label>:11                                      ; preds = %8
+  %12 = load i32* %2
+  %13 = icmp sle i32 %12, 1000
+  br i1 %13, label %14, label %19
+
+; <label>:14                                      ; preds = %11
+  %15 = load i32* %2
+  %16 = load i32* %1
+  %17 = sext i32 %16 to i64
+  %18 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %17
+  store i32 %15, i32* %18
+  br label %19
+; <label>:19                                      ; preds = %14, %11, %8, %5, %0
+  ret void
+}
+\end{pascalcode}
+
+
+\begin{llvmcode}
+define void @Array__read(i32 %ix, i32* %tt) nounwind ssp {
+  %1 = alloca i32, align 4
+  %2 = alloca i32*, align 8
+  store i32 %ix, i32* %1, align 4
+  store i32* %tt, i32** %2, align 8
+  %3 = load i32* %1, align 4
+  %4 = icmp sge i32 %3, 0
+  br i1 %4, label %5, label %14
+
+; <label>:5                                       ; preds = %0
+  %6 = load i32* %1, align 4
+  %7 = icmp sle i32 %6, 99
+  br i1 %7, label %8, label %14
+
+; <label>:8                                       ; preds = %5
+  %9 = load i32* %1, align 4
+  %10 = sext i32 %9 to i64
+  %11 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %10
+  %12 = load i32* %11
+  %13 = load i32** %2, align 8
+  store i32 %12, i32* %13
+  br label %16
+
+; <label>:14                                      ; preds = %5, %0
+  %15 = load i32** %2, align 8
+  store i32 0, i32* %15
+  br label %16
+
+; <label>:16                                      ; preds = %14, %8
+  ret void
+}
+\end{llvmcode}
+
+
+\begin{llvmcode}
+define void @Array__swap(i32 %ix, i32 %jx) nounwind ssp {
+  %1 = alloca i32, align 4
+  %2 = alloca i32, align 4
+  %temp = alloca i32, align 4
+  store i32 %ix, i32* %1, align 4
+  store i32 %jx, i32* %2, align 4
+  %3 = load i32* %1, align 4
+  %4 = icmp sge i32 %3, 0
+  br i1 %4, label %5, label %30
+
+; <label>:5                                       ; preds = %0
+  %6 = load i32* %1, align 4
+  %7 = icmp sle i32 %6, 99
+  br i1 %7, label %8, label %30
+
+; <label>:8                                       ; preds = %5
+  %9 = load i32* %2, align 4
+  %10 = icmp sge i32 %9, 0
+  br i1 %10, label %11, label %30
+
+; <label>:11                                      ; preds = %8
+  %12 = load i32* %2, align 4
+  %13 = icmp sle i32 %12, 99
+  br i1 %13, label %14, label %30
+
+; <label>:14                                      ; preds = %11
+  %15 = load i32* %2, align 4
+  %16 = sext i32 %15 to i64
+  %17 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %16
+  %18 = load i32* %17
+  store i32 %18, i32* %temp, align 4
+  %19 = load i32* %1, align 4
+  %20 = sext i32 %19 to i64
+  %21 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %20
+  %22 = load i32* %21
+  %23 = load i32* %2, align 4
+  %24 = sext i32 %23 to i64
+  %25 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %24
+  store i32 %22, i32* %25
+  %26 = load i32* %temp, align 4
+  %27 = load i32* %1, align 4
+  %28 = sext i32 %27 to i64
+  %29 = getelementptr  [100 x i32]* @Array__arr, i32 0, i64 %28
+  store i32 %26, i32* %29
+  br label %30
+
+; <label>:30                                      ; preds = %14, %11, %8, %5, %0
+  ret void
+}
+
+\end{llvmcode}
+
+
+
+
+\subsection{Real example - Bubble Sort}
+
+\begin{pascalcode}
+MACHINE
+   Bubble
+VARIABLES
+   vec,sort
+INVARIANT
+   vec : 0..99 --> 0..99 & sort : 0..1 &
+   ( sort = 1 =>  !ii.(ii : 0..98 => vec(ii)<=vec(ii+1)))
+INITIALISATION
+   vec :: 0..99 --> 0..99 || sort := 0
+OPERATIONS
+   op_sort =
+   ANY sorted_vector WHERE
+    sorted_vector : 0..99 --> 0..99 &
+    !ii.(ii : 0..98 => sorted_vector(ii)<=sorted_vector(ii+1))
+   THEN
+    vec := sorted_vector|| sort := 1
+   END
+
+END
+
+
+IMPLEMENTATION
+   Bubble_i
+REFINES
+   Bubble
+CONCRETE_VARIABLES
+   vec1,sort1
+INVARIANT
+   vec1 : 0..99 --> 0..99 & sort1 : 0..1 &
+   vec = vec1 & sort1 = sort
+INITIALISATION
+   vec1(0) := 0  ;
+   sort1 := 0
+OPERATIONS
+   op_sort =
+   VAR nn, swapped, ii, tmp, vi, vi2 IN
+	swapped := 1;
+	nn := 100;
+	ii:=0;
+	WHILE swapped = 1 DO
+		swapped := 0;
+		ii:= 0;
+		nn:= nn-1;
+
+		WHILE ii<= nn DO
+		vi :=  vec1(ii);
+		vi2 := vec1(ii+1);
+		IF vi > vi2 THEN
+			tmp:= vec1(ii+1);
+			vec1(ii+1):=vec1(ii);
+			vec1(ii):=tmp;
+			swapped:= 1
+		END;
+		ii:= ii+1
+
+		INVARIANT 1>0
+		VARIANT nn-ii
+		END
+
+	INVARIANT 1>0
+	VARIANT nn-ii
+	END
+   END
+END
+\end{pascalcode}
+
+

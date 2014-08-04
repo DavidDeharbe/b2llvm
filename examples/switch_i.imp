@@ -1,0 +1,40 @@
+/* Author: David */
+IMPLEMENTATION
+    switch_i
+REFINES
+    switch
+CONCRETE_VARIABLES
+    v1 ,
+    v2
+INVARIANT
+    v1 : INT & v2 : INT &
+    v1 : 0..4 & v2 : 0..1 &
+    ((v1 = 0 & v2 = 0) or
+        (v1 = 1 & v2 = 0) or
+        (v1 = 1 & v2 = 1) or
+        (v1 = 2 & v2 = 1) or
+        (v1 = 4 & v2 = 1))
+INITIALISATION
+    v1 := 0;
+    v2 := 0
+    
+OPERATIONS
+    step =
+    VAR sum IN
+        sum := v1 + v2;
+        CASE sum OF
+            EITHER 0 THEN
+                v1 := v1 + 1
+            OR 1 THEN
+                v2 := v2 + 1
+            OR 2, 3 THEN
+                v1 := v1 * 2
+            ELSE
+                BEGIN
+                    v1 := 0;
+                    v2 := 0
+                END
+            END
+        END
+    END
+END

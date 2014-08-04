@@ -1,0 +1,4 @@
+\frametitle{Current State of B2LLVM}
+\begin{figure}[H]
+               \includegraphics[width=.777\textwidth]{figures/CurrentState.png}
+\end{figure}

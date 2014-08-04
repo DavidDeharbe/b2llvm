@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="Machine">
+    <xs:complexType>
+      <xs:all minOccurs="0">
+	<xs:element name="Parameters" minOccurs="0" maxOccurs="1">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="Parameter" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="Constraints" type="Predicate_type"/>
+	<xs:element name="Abstraction">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:group ref="Machine" minOccurs="1" maxOccurs="unbounded"/>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="Sees">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:group ref="Machine" minOccurs="1" maxOccurs="unbounded"/>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="Imports">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="Imported_Machine" minOccurs="1" maxOccurs="unbounded"/>
+	      <xs:complexType>
+		<xs:sequence>
+		  <xs:group ref="Machine" minOccurs="1" maxOccurs="unbounded"/>
+		  <xs:element name="Parameters" minOccurs="0" maxOccurs="1">
+		    <xs:complexType>
+		      <xs:sequence>
+			<xs:element name="Parameter" minOccurs="1" maxOccurs="unbounded" type="Expression_type"/>
+		      </xs:sequence>
+		    </xs:complexType>
+		  </xs:element>
+		</xs:sequence>
+	      </xs:complexType>
+	    </xs:element>
+	  </xs:sequence>
+	</xs:complexType>
+      </xs:element>
+      <xs:element name="Includes">
+	<xs:complexType>
+	  <xs:sequence>
+	    <xs:element name="Included_Machine" minOccurs="1" maxOccurs="unbounded"/>
+	    <xs:complexType>
+	      <xs:sequence>
+		<xs:group ref="Machine" minOccurs="1" maxOccurs="unbounded"/>
+		<xs:element name="Parameters" minOccurs="0" maxOccurs="1">
+		  <xs:complexType>
+		    <xs:sequence>
+		      <xs:element name="Parameter" minOccurs="1" maxOccurs="unbounded" type="Expression_type"/>
+		    </xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+	      </xs:sequence>
+	    </xs:complexType>
+	  </xs:element>
+	</xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="Extends">
+      <xs:complexType>
+	<xs:sequence>
+	  <xs:element name="Extended_Machine" minOccurs="1" maxOccurs="unbounded"/>
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:group ref="Machine" minOccurs="1" maxOccurs="unbounded"/>
+	      <xs:element name="Parameters" minOccurs="0" maxOccurs="1">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="Parameter" minOccurs="1" maxOccurs="unbounded" type="Expression_type"/>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Promotes">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="Promoted_Operation" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Sets">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="Set" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Abstract_Constants">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="Constant" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Concrete_Constants">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="Constant" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Abstract_Variables">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="Variable" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Concrete_Variables">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="Variable" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Properties" type="Predicate_type"/>
+  <xs:element name="Invariant" type="Predicate_type"/>
+  <xs:element name="Assertions" type="Predicate_type"/>
+  <xs:element name="Initialisation" type="Substitution_type"/>
+  <xs:element name="Local_Operations">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="Operation" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Operations">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="Operation" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:all>
+</xs:complexType>
+<xs:attribute name="name" type="xs:string"/> 
+<xs:attribute name="type" type="machine_type"/> 
+</xs:element>
+
+</xs:schema>

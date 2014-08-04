@@ -1,0 +1,317 @@
+<Machine name='sort' type='abstraction'>
+<Abstract_Variables>
+<Identifier value='vec' />
+<Identifier value='done' />
+</Abstract_Variables>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='vec' />
+<Binary_Expression operator='--&gt;'>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='done' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator='='>
+<Identifier value='done' />
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Expression_Comparison>
+<Quantified_Predicate type='!'>
+<Variables>
+<Identifier value='ii' />
+</Variables>
+<Body>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ii' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='98'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='&lt;='>
+<Binary_Expression operator='('>
+<Identifier value='vec' />
+<Identifier value='ii' />
+</Binary_Expression>
+<Binary_Expression operator='('>
+<Identifier value='vec' />
+<Binary_Expression operator='+'>
+<Identifier value='ii' />
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Binary_Predicate>
+</Body>
+</Quantified_Predicate>
+</Binary_Predicate>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Nary_Substitution operator='||'>
+<Becomes_In>
+<Variables>
+<Identifier value='vec' />
+</Variables>
+<Value>
+<Binary_Expression operator='--&gt;'>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Value>
+</Becomes_In>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='done' />
+</Variables>
+<Values>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Values>
+</Affectation_Substitution>
+</Nary_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='op_sort'>
+<Body>
+<ANY_Substitution>
+<Variables>
+<Identifier value='sorted_vector' />
+</Variables>
+<Predicate>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='sorted_vector' />
+<Binary_Expression operator='--&gt;'>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+<Quantified_Predicate type='!'>
+<Variables>
+<Identifier value='ii' />
+</Variables>
+<Body>
+<Binary_Predicate operator='=&gt;'>
+<Expression_Comparison operator=':'>
+<Identifier value='ii' />
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='98'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='&lt;='>
+<Binary_Expression operator='('>
+<Identifier value='sorted_vector' />
+<Identifier value='ii' />
+</Binary_Expression>
+<Binary_Expression operator='('>
+<Identifier value='sorted_vector' />
+<Binary_Expression operator='+'>
+<Identifier value='ii' />
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Binary_Predicate>
+</Body>
+</Quantified_Predicate>
+<Expression_Comparison operator='='>
+<Unary_Expression operator='ran'>
+<Identifier value='sorted_vector' />
+</Unary_Expression>
+<Unary_Expression operator='ran'>
+<Identifier value='vec' />
+</Unary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Predicate>
+<Then>
+<Nary_Substitution operator='||'>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='vec' />
+</Variables>
+<Values>
+<Identifier value='sorted_vector' />
+</Values>
+</Affectation_Substitution>
+<Affectation_Substitution>
+<Variables>
+<Identifier value='done' />
+</Variables>
+<Values>
+<Integer_Litteral value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Values>
+</Affectation_Substitution>
+</Nary_Substitution>
+</Then>
+</ANY_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

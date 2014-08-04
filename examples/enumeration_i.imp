@@ -1,0 +1,18 @@
+IMPLEMENTATION
+    enumeration_i
+REFINES
+    enumeration
+CONCRETE_VARIABLES
+    current
+INVARIANT
+    current : PARITY &
+    ((count = 0) <=> (current = even)) &
+    ((count = 1) <=> (current = odd))
+INITIALISATION
+    current := even
+    
+OPERATIONS
+    tick = IF current = even THEN current := odd ELSE current := even END;
+    
+    res <-- read = res := current
+END

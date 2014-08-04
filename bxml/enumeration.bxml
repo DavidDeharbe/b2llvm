@@ -1,0 +1,263 @@
+<Machine name='enumeration' type='abstraction'>
+<Sets>
+<Set>
+<Identifier value='PARITY'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='PARITY' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Enumerated_Values>
+<Identifier value='even'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+<Identifier value='odd'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Enumerated_Values>
+</Set>
+</Sets>
+<Abstract_Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Abstract_Variables>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+<B0Type>
+<Binary_Expression operator='..'>
+<Identifier value='MININT' />
+<Identifier value='MAXINT' />
+</Binary_Expression>
+</B0Type>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Values>
+</Assignement_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='tick'>
+<Body>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='-'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Body>
+</Operation>
+<Operation name='read'>
+<Output_Parameters>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='count'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='even'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+<Else>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='res'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='odd'>
+<Attributes>
+<TypeInfo>
+<Identifier value='PARITY' />
+</TypeInfo>
+<B0Type>
+<Identifier value='PARITY' />
+</B0Type>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Else>
+</If_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

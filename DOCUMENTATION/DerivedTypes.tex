@@ -1,0 +1,224 @@
+
+
+\subsection{Translation of structures and arrays}
+\label{sec:StructArray}
+
+Two approaches are possible to support arrays and structures. An approach is 
+importing reusable libraries of AtelierB that are reported in the official 
+document of ClearSy\footnote{\url{http://www.atelierb.eu/ressources/DOC/english/reusable-components-reference.pdf}}. 
+This approach is supported, but the generated code is more complex and it needs 
+more intermediate steps to manipulate the data of imported components. 
+Moreover, this approach allows dynamic allocation for arrays, but it is 
+strongly not recommended for safety-critical systems. A second approach enjoys 
+the direct correspondence between B0 native types and LLVM and this approach 
+is presented here.
+
+\subsubsection{Structure} \VGM{It is not implemented yet, because it requires generating an XML example.}
+The structure declaration defines a list of variables to be placed under one 
+name, allowing several variables to be accessed by one base name. This example  
+initializes a structure, and gets and sets one value of xx'balance. 
+ 
+\begin{pascalcode}
+xx := rec(id:1, balance:10);
+xx'balance := xx'balance -1;
+\end{pascalcode}
+The lines 1 and 2 are represented in translation in LLVM code:
+
+\begin{llvmcode}
+%1 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 0
+store i32 1, i32 * %1
+%2 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
+store i32 10, i32 * %2
+
+%3 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
+%4 = load i32* %3
+%5 = sub nsw i32 %4, 1
+%6 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
+store i32 %5, i32* %6
+\end{llvmcode}
+
+The $RecField$ rule gets an element value from the record. The same rule is 
+used on the left side of attribution as a $LValue$ and right side of 
+attribution as an $Expression$. The functions \SBPos(n) and \SBType(n)  get 
+respectively the position and type of $n$ element in the structure. 
+
+\begin{align*}
+\begin{split}
+  \trad{n}{\B{RecField}} \isdef \\
+   & \IF \B{n.type} \mbox{ is \B{BOOL or NAT or INT} } \THEN \\
+   &\quad  \LET \ell = \lbl  \AND  \PH{t} = n.type \AND \PH{v} = n.element \IN\\
+   &\quad  \llvm{"\PH{\ell} = getelementptr \PH{t}* \PH{v}, i32 0, i32  \SBPos(\B{n})\nl"} \\
+   &\quad  \sep  \ell  \sep \SBType(\B{n})\\
+\end{split}
+\end{align*}
+
+The attribution from record structure to a record structure variable, line 1 
+from last B code example, is translated by a sequence of application of rule 
+$RecField$. The nested structures will be designed in the next project phase.
+%TODO after test the first examples.
+
+\subsubsection{Arrays}
+
+The arrays store a fixed-size sequential collection of elements with the same type. 
+They consist of contiguous memory locations, where the lowest address (0) 
+corresponds to the first element and the highest address to the last element.
+In B, a concrete array is a total function where the domain indexes the range 
+elements. Declaration examples of arrays are:
+\begin{itemize}
+	\item $array1 \in (0..10) \to INT $	(a simple array)
+	\item $array2 \in (1..10) \times (1..20) \times (1..30) \to INT $   (a multidimensional array)
+	\item $\{1\mapsto1\mapsto4, 1\mapsto2\mapsto5\}  \in (INT \times INT) \times INT$ (an explicit array)
+\end{itemize} 
+
+
+\subsubsection{Relation arrays B0 and LLVM}
+
+The arrays in B0 are represented by functions where an index points to an 
+element. By default, the element of index not initialized has a zero value. 
+
+This section shows the relation between arrays B0 and LLVM. The sequence of
+elements are defining an array, getting an element and setting an
+element.
+
+\subsubsection{Declaring an array}
+
+
+The essential elements of the array are its name, size and type. 
+The size of ``e'' array with the indexes (i1,...,in) are defined according 
+to the formula:\\
+ $size(e) = (e.i1\_end - e.i1\_star+1) * ... * (e.in\_end - e.in\_start+1)$.
+
+The following code declares a multidimensional global array called ``Array2'' 
+with 6000 (10*20*30) integer numbers with 32 bits and initialized with zero.
+
+\begin{llvmcode}
+@array2 = internal global [10 x [20 x [30 x i32]]] zeroinitializer, align 16
+\end{llvmcode}
+
+\VGM{It is not implemented yet, because it requires generating an XML example.}
+The following example updates several elements from an array in B, but it is not present in B0 grammar.
+
+\begin{pascalcode}
+array2 := array2 <+ {1|->2|->0|->4,  1|->2|->1|->5}
+\end{pascalcode}
+An alternative  way to represent these updating in B0 is using sequential attribution:
+
+\begin{pascalcode}
+array2(1,2,0) := 4;
+array2(1,2,1) := 5;
+\end{pascalcode}
+
+
+The LLVM instruction \textit{getelementptr} is used to select an element in
+the array or structure. A simple example is: 
+
+\begin{llvmcode}
+%7 = getelementptr [10 x [20 x [30 x i32]]]* @Array2, i32 0, i64 2, i64 3, i64 4
+\end{llvmcode}
+
+
+The first two parameters define the type and name of the variable, and the others are indexes to select the element in the data type. The third parameter (i32 0)
+selects the first element in the pointer (* @array2). The last elements 
+(i64 2, i64 3, i64 4) select the value from position (2,3,4) storing it in \%7.
+This array is multidimensional, so several indexes must be declared separated
+by comma to get the specific element.
+
+\subsubsection{Setting and getting array}
+
+The following blocks illustrate a B code setting a value to array
+and its translation to LLVM. 
+
+\begin{pascalcode} 
+VAR xx, yy, zz IN
+	xx=2;
+	yy=3;
+	zz=4;
+	array2(x,y,z):=7
+END
+\end{pascalcode}
+
+This example is translated in four steps. First, the variables \%x, \%y, \%z 
+are allocated. Second, the respective values 2, 3, 4 are stored in variables. 
+Third, the variables are loaded to local variables and converted to 64 bits. 
+Finally, the address of array is calculated in local variable \%7 and the value 
+7 is stored in it.  
+\begin{figure}[h]
+\begin{llvmcode}
+%xx = alloca i32
+%yy = alloca i32
+%zz = alloca i32
+store i32 2, i32* %xx
+store i32 3, i32* %yy
+store i32 4, i32* %zz
+%1 = load i32* %zz
+%2 = sext i32 %1 to i64
+%3 = load i32* %yy
+%4 = sext i32 %3 to i64
+%5 = load i32* %xx
+%6 = sext i32 %5 to i64
+%7 = getelementptr[10x[20x[30xi32]]]*@Array2,i32 0,i64 %6,i64 %4,i64 %2;getting an element
+store i32 7, i32* %7         ;setting an element
+\end{llvmcode}
+\end{figure}
+
+\subsubsection{Rules for support array}
+
+
+\paragraph{Array item} selects an item in expressions as ``$a(n1,...,n_{n})$'', 
+where $a$ is $n.base$ and $n1,...,n_{n}$ is a sequence of indexes that 
+calculates the address of element. This rule also supports to translate 
+expressions of arrays.
+
+\begin{align*}
+\lefteqn{\trad{n}{ArrayItem} \isdef} \\
+&  \LET p_1 \sep v_1 \sep t_1  = \trad{n.base}{Exp}  \IN \\
+&  \LET r \sep p_2  = \trad{n.indexes}{LRExp}  \IN \\
+&  \LET v =  \variable \AND  t = \trad{\B{n.type}}{Type}  \IN \\
+&  \llvm{"\PH{p_1} \PH{p_2} \PH{v} =  getelementptr \PH{t_1}, \PH{v_1}, i32 0 \PH{r}\nl"}  \sep v \sep t\\
+\end{align*}
+
+A list of type and variable is generated by the following rule.
+\begin{align*}
+&\trad{n}{LRExp} \isdef \LET p \sep v \sep t  = \trad{n}{ShiftExp}  \IN  \llvm{",\PH{t} \PH{v} "} \sep p\\
+&\trad{n l}{LRExp} \isdef \LET r_1 \sep p_1 = \trad{n}{LRExp} \AND 
+ \LET r_2 \sep p_2 = \trad{l}{LRExp} \IN\\
+& \quad  \llvm{"\PH{r_1} \PH{r_2}"} \sep \llvm{"\PH{p_1} \PH{p_2}"}\\
+\end{align*}
+
+
+The element access of array can need a shift in indexes. When the domain of 
+array is an interval and it is not started from zero, it must adjust the 
+indexes shifting the access, because the addressing  of array in intermediate 
+representation LLVM starts at 0. To access an element from array the formula is 
+$address(e(i1,..,in))  = i1-i1\_start, ... , in-in\_start$. The following rule 
+\footnote{The function $TSymbol$ returns the ``start'', ``end'' and type of the one 
+index.} makes the shift for each index of array. \VGM{TODO: The function TSymbol
+returns the ``start'', ``end'' and type of the one index.}
+
+\begin{align*}
+&\trad{n}{ShiftExp} \isdef \LET p \sep v \sep t  = \trad{n}{Exp} \AND \\ \\
+&\quad iStart \sep iEnd \sep iType = \trad{n}{TSymbol}  \AND  \PH{\ell} = \lbl \IN \\
+&\quad \IF ( iStart == 0 ) \THEN  \llvm{",\PH{t} \PH{v} "} \sep p \\
+&\quad \ELSE \LET  p' \sep v \sep v' \sep t'  = \trad{t,v,itype,istart}{Cast} \IN \\
+&\quad \llvm{",\PH{t} \PH{\ell} "} \sep  \llvm{"\PH{p} \PH{p'}  \PH{\ell} = sub \PH{t'} \PH{v}, \PH{v'}\nl"}  \\
+\end{align*}
+
+The \trad{}{ShiftExp} rule does a subtraction and this operation must have operators with the same data types so the following cast rule is used:
+
+\begin{align*}
+&\trad{t,v,t',v'}{Cast} \isdef \LET  \ell = \lbl \IN \\
+&\quad \IF ( t == t') \THEN p \sep v \sep v' \sep t  \\
+&\quad \ELSE \IF (t<t') \THEN \\
+&\quad \quad \llvm{"\PH{\ell}= bitcast \PH{t} \PH{v} , \PH{t'}\nl"}  \sep l \sep v' \sep t'\\ 
+&\quad \ELSE \\ 
+&\quad \quad \llvm{"\PH{\ell}= bitcast \PH{t'} \PH{v'} , \PH{t}\nl"} \sep v \sep l \sep t \\ 
+\end{align*}
+
+\paragraph{Restriction on array:} The translation of direct attribution
+ between arrays is not yet supported, for example:
+
+\begin{pascalcode}
+ array1 := array2;
+\end{pascalcode}
+
+

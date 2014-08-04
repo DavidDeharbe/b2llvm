@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="project">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+	<xs:element name="developed" minOccurs="1" maxOccurs="1">
+	  <xs:complexType>
+	    <xs:element name="machine" minOccurs="1" maxOccurs="1" type="xs:string"/>
+	    <xs:element name="implementation" minOccurs="1" maxOccurs="1" type="xs:string"/>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+	<xs:element name="base" minOccurs="1" maxOccurs="1">
+	  <xs:complexType>
+	    <xs:element name="machine" minOccurs="1" maxOccurs="1" type="xs:string"/>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

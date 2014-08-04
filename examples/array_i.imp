@@ -1,0 +1,48 @@
+/* Author:  */
+IMPLEMENTATION 
+   array_i
+REFINES
+   array
+CONCRETE_VARIABLES
+   arr, arr_n, tmp
+INVARIANT 
+    arr :  ((0..99) --> 0..1000) &
+    tmp :  ((0..99) --> 0..1000) &
+    arr_n : ((0..99) *(0..99)) --> 0..1000
+INITIALISATION
+   arr(1) := 100;
+   arr_n(0,0) := 10;
+   tmp := arr
+   
+OPERATIONS
+   set ( ix , tt ) =
+   IF
+       ix >= 0 & ix <=99 & tt >= 0  & tt <= 1000
+   THEN
+       
+      arr(ix) := tt 
+   END;
+
+   tt <-- read ( ix ) =
+   IF
+       ix >= 0 & ix <=99
+   THEN
+       tt := arr ( ix )
+   ELSE
+       tt := 0
+   END;
+
+   swap ( ix , jx ) =
+   IF
+        ix >= 0 & ix <=99 & jx >= 0 & jx <=99 
+   THEN
+
+       VAR temp IN
+           temp := arr(jx);
+           arr(jx) := arr(ix);
+           arr(ix) := temp
+       END
+   END
+
+
+END

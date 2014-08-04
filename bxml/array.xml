@@ -1,0 +1,46 @@
+<Machine name='array' type='abstraction'>
+<Abstract_Variables>
+<Identifier value='arr' />
+</Abstract_Variables>
+<Invariant>
+<Expression_Comparison operator=':'>
+<Identifier value='arr' />
+<Binary_Expression operator='--&gt;'>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+<Binary_Expression operator='..'>
+<Integer_Litteral value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+<Integer_Litteral value='1000'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Litteral>
+</Binary_Expression>
+</Binary_Expression>
+</Expression_Comparison>
+</Invariant>
+<Initialisation>
+</Initialisation>
+</Machine>
