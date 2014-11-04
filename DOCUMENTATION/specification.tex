@@ -10,16 +10,17 @@
 \usepackage{color}
 \usepackage{minted}
 \usepackage{array} 
+\usepackage[normalem]{ulem}
 
 \pagestyle{headings}
 
 \title{Translation of B Implementations to the LLVM: Specification}
-\author{David Déharbe and Valério Medeiros Jr}
+\author{David Déharbe}
 \institute{Federal University of Rio Grande do Norte\\
 Federal Institute of Education Science and Technology of Rio Grande do Norte\\
  Natal (Brazil)}
 
-\date{March 2014}
+\date{October 2014}
 \definecolor{bg}{rgb}{0.95,0.95,0.95}
 \newminted{llvm}{frame=single,firstnumber=1,linenos=true,fontsize=\scriptsize,bgcolor=bg}
 \newminted{pascal}{frame=single,firstnumber=1,linenos=true,fontsize=\scriptsize,bgcolor=bg}
@@ -294,7 +295,7 @@ Note that the translation presented in this paper only considers types \B{INT}
         \multicolumn{3}{|c|}{Array type : \B{ArrayType}} \\
         \hline 
 	\B{dom} & : & seq \B{Set}\\
-	\B{ran} & : & \B{Set}\\
+	\B{ran} & : & \sout{\B{Set}} \B{Type}\\
         \hline
         \multicolumn{3}{|c|}{Array expression : \B{Array}} \\
         \hline
@@ -639,6 +640,8 @@ sec.~\ref{sec:control}.
 \section{Translation: Data}
 \label{sec:data}
 
+\subsection{Basic data types}
+
 The translation presented in this paper handles the following concrete data:
 \begin{description}
 \item[Booleans] There is no Boolean type in LLVM, so we encode Booleans with
@@ -650,68 +653,86 @@ $$\trad{BOOL}{\B{Type}} \isdef \llvm{"i1"}.$$
 $$\trad{INT}{\B{Type}} \isdef \llvm{"i16"} \mid \llvm{"i32"} \mid \llvm{"i64"}.$$
 \item[enumerated sets] Again, enumerations are encoded as integer types, and the
   width of the type depends on the size of the enumeration.
-$$\trad{\{e1 ... en\}}{\B{Type}} \isdef \LET w \BE \log_2 \B{n} \IN \llvm{i\PH{w}}.$$
+$$\trad{\{e1 ... en\}}{\B{Type}} \isdef \LET w \BE \lceil \log_2 \B{n} \rceil \IN \llvm{i\PH{w}}.$$
 
 \end{description}
 
-\subsection{Derived Data Types}
+\subsection{Composed data types}
 
-The data types \textbf{structures} and \textbf{arrays} require detailed 
-representation in the abstract syntax structure from the table \ref{tab:node-attr}.
-The section \ref{sec:StructArray} also presents other examples and rules for these derived data types.
- 
-The following examples relate the B code and their abstract syntax representation. The \textcolor{gray}{gray elements} are not related to their abstract syntax tree to simplify the examples. 
+Both B0 and LLVM include the two main constructions to build composed
+data types: namely structures, for composition of heterogeneous data,
+and arrays, to compose homogeneous data. Naturally, B0 structures are
+encoded as LLVM structure types, and B0 arrays as LLVM array types.
 
-\begin{description}
+\subsubsection{Structures}
 
-\item[structures] The structure types of B are naturally encoded as structure
-  types in LLVM.
+The encoding of the B0 structure \B{n} is the LLVM structure type
+formed by the sequence of the type encodings for the different fields
+of \B{n}.
 
-Declaring an structure type:
-\[
-  \textcolor{gray}{accountRecord \in} \underbrace{struct( \underbrace{name \in ID, balance \in \mathbb{N} }_{seq\ Field} )}_{Struct} 
-\]
-Initializing a record with a sequence of expressions:
-\[
-  \textcolor{gray}{accountRecord :=}  \underbrace{rec(\underbrace{name:xx’name, balance:(xx’balance - amt)}_{seq\ Exp})}_{Record}
-\]
+\begin{align*}
+  \trad{\B{n}}{\B{Structure}} \isdef
+  & \LET lt \BE \trad{\B{n.elements}}{\ListOf{\B{Field}}} \IN\\
+  & \quad \llvm{"\{ \PH{lt} \}"} \\
+  \trad{\B{n}}{\B{Field}} \isdef
+  & \trad{\B{n.type}}{\B{Type}}
+\end{align*}
 
-Setting a record field to a variable:
-\[
-  \textcolor{gray}{xx :=}  \underbrace{accountRecord'balance}_{RecField} 
-\]
+\subsubsection{Arrays}
 
+Atelier-B has a very precise definition of what kind of data its code
+generator considers as array. We present it and generalize it to
+consider a larger class of data types that can be encoded as arrays.
 
+Let us call B0 arrays the data types that Atelier-B classifies as
+being implementable as arrays. This classification is based on the
+definition of a simple concrete set. Basically, a simple concrete set
+is such that its cardinality can be computed when code is generated.
+This is the case in the following situations: Boolean, integer
+intervals, enumerated sets. A B0 array is the Cartesian product of $n
+> 1$ simple concrete sets.
 
-\item[arrays] In LLVM, an array type is defined by its size and the type of its
-  elements, the main issues in encoding a B array type into LLVM being to
-  determine the size of the array and multi-dimensionality.
-Declaring an array type:
-\[
-\textcolor{gray}{arr \in} \underbrace{( \underbrace{(0..99) \times (0..99)}_{seq\ Set} \to \underbrace{0..1000}_{Set})}_{ArrayType}
-\]
-Initializing an array:
-\[
-\textcolor{gray}{arr :=} \underbrace{\{\underbrace{1 \mapsto  100,2 \mapsto 101}_{seq\ Map}\}}_{Array}
-\]
-\[
-\textcolor{gray}{arr :=} \underbrace{\{\underbrace{\underbrace{0..100 \times 0..100  \times}_{seq\ Exp} \underbrace{\{1\}}_{Exp} }_{Product}\}}_{Array}
-\]
+In the target LLVM language, an array array is defined with two
+elements: the size and the type of the elements. A LLVM array of
+dimension $n > 1$ is represented as a unidimensional array of arrays
+of dimension $n-1$.
 
-Updating a selected element from array by a value of variable:
-\[  \underbrace{\underbrace{arr}_{Array}(\underbrace{1+ii}_{seq\ Exp})}_{ArrayItem} \textcolor{gray}{:= xx}
-\]
+Code generation take into account several aspects:
+\begin{itemize}
+\item Convert recursively the representation of Cartesian products of
+  $n>2$ types to an array of representation of Cartesian products of
+  $n-1$ types.
+\item Compute the cardinality of simple concrete sets.
+\item Generalize implementable array types so that the elements may be
+  any implementable B0 type (and not just simple concrete sets).
+\end{itemize}
 
-Setting a selected element from array to a variable:
-\[ 
-\textcolor{gray}{xx :=} \underbrace{\underbrace{arr}_{Array}(\underbrace{1+ii}_{seq\ Exp})}_{ArrayItem} \]
-\end{description}
+\newcommand{\card}[0]{\mathbf{card}}
+\newcommand{\fst}[0]{\ensuremath{\mathbf{fst}}}
+\newcommand{\rst}[0]{\ensuremath{\mathbf{rst}}}
+\newcommand{\twodots}[0]{..}
 
-The current specification of the code generator does not handle deferred sets.
-These data types and logic/math operators compose expressions that is in 
-the next section.
+The second point is addresssed by defining $\card$ to yield the
+cardinality of simple concrete set:
+\begin{align*}
+  \card \{ e1 \cdots en \} &\isdef n \\
+  \card \{ L \twodots U \} &\isdef (U - L) + 1 \\
+  \card \{ \B{BOOL} \} &\isdef 2
+\end{align*}
 
-\section{Translation Expressions}
+The two remaining points are taken into account in the translation of
+B implementable array types into LLVM array types.
+\begin{align*}
+  \trad{n}{ArrayType} \isdef
+  & \LET s \BE \card (\fst(\B{n.dom})) \AND \\
+  & \quad et \BE \IF |n.dom| = 1 \THEN \trad{n.ran}{Type} \\
+  & \quad \quad \ELSE \trad{\B{(dom = \rst(n.dom), ran = n.ran)}}{ArrayType} \\
+  & \IN \llvm{"[ \PH{s} x \PH{et} ]"}
+\end{align*}
+Note that this is strictly more general than what is currently
+considered as implementable in Atelier-B.
+
+\section{Expressions}
 \label{sec:expr}
 
 To evaluate a composed expression using the LLVM, one must first generate a
@@ -740,7 +761,9 @@ $$\opmap = \{
   \end{array}
 $$
 
-\paragraph{Atomic expressions} have a simple translation. In the case of
+\subsubsection{Atomic expressions} 
+
+The encoding of atomic expressions has a simple definition. In the case of
 literals, one only needs to issue the corresponding LLVM literal:
 $\trad{TRUE}{\B{Lit}} \isdef \llvm{""} \sep \llvm{"1"} \sep \llvm{"i1"}$,
 $\trad{FALSE}{\B{Lit}} \isdef \llvm{""} \sep \llvm{"0"} \sep \llvm{"i1"}$ and
@@ -766,14 +789,16 @@ state structure to pointer variable $p$ and then dereference $p$ to assign $v$:
 & \quad \llvm{\PH{v} = load \PH{t}* \PH{p}\nl"} \sep v \sep t
 \end{align*}
 
-\paragraph{Comparisons} are formed by the application of a relational operator
-to two expressions.
 
-The code responsible for evaluating a comparison \B{r} is defined by the
-following rule. First both arguments are evaluated in $p_1$ and $p_2$, and then
-an instance of the LLVM comparison instruction \llvm{icmp} is used to compare
-the temporary variables $v_1$ and $v_2$, of type $t_1 = t_2$, storing the result
-in the fresh variable $v$.
+\subsubsection{Comparisons}
+
+Comparisons are formed by the application of a relational operator to
+two expressions. The code responsible for evaluating a comparison
+\B{r} is defined by the following rule. First both arguments are
+evaluated in $p_1$ and $p_2$, and then an instance of the LLVM
+comparison instruction \llvm{icmp} is used to compare the temporary
+variables $v_1$ and $v_2$, of type $t_1 = t_2$, storing the result in
+the fresh variable $v$.
 \begin{align*}
 \lefteqn{\trad{r}{\B{Comp}} \isdef
   \LET
@@ -783,9 +808,10 @@ in the fresh variable $v$.
 & \llvm{"\PH{p_1}\quad\PH{p_2}\quad\PH{v} = icmp \PH{\opmap(\B{r.op})} \PH{t_1} \PH{v_1} \PH{v_2} \nl"} \sep v
 \end{align*}
 
-\paragraph{Arithmetic operations} have a similar
-structure and interpretation as comparisons. Here is the rule for binary
-arithmetic operations:
+\subsubsection{Arithmetic operations} 
+
+These have a similar structure and interpretation as comparisons. Here
+is the rule for binary arithmetic operations:
 \begin{align*}
 \lefteqn{\trad{r}{\B{Term}} \isdef
   \LET
@@ -804,7 +830,8 @@ applications of binary applications. Next is the translation of the unary
   & \quad \quad \llvm{\PH{w} = add i32 1, \PH{v} \nl"} \sep w \sep \llvm{i32}
 \end{align*}
 
-\paragraph{Predicates}
+\subsubsection{Predicates}
+
 The translation of conditions takes as input a condition node \B{n}, as well as
 two labels $\ell_t$ and $\ell_f$ that correspond to program locations where the
 execution shall jump when the condition is evaluted to true or false,
@@ -829,12 +856,33 @@ a ``short-cut'' when the evaluation of the first argument yields false:
 \end{align*}
 The definition of the translation for disjunctions is similar and is omitted.
 
-\paragraph{$\lambda$-expressions}
+\subsubsection{$\lambda$-expressions}
 
-[[[ TODO ]]]
+Atelier-B does not include $\lambda$-expressions in the implementable
+subset.  However, these are side-effect free expressions that are
+amenable to code synthesis without too much effort.
+
+For each $\lambda$-expression present in a B module, a LLVM function
+is generated. Such code generation obeys the following principles:
+\begin{itemize}
+\item a name is created;
+\item each argument of the $\lambda$-expression is represented by
+  a parameter of the LLVM function;
+\item the return type of the LLVM function is the encoding of the type
+  returned by the $\lambda$-expression;
+\item the expression expressing the result of the $\lambda$-expression
+  is encoding as the series of LLVM instructions that encode the evaluation
+  of that expression, followed by a return instruction.
+\end{itemize}
+
+
+[[[ COMPLETE ]]]
+
+[[[ BEGIN REDO THIS ]]]
 
 \include{derivedTypes}
 
+[[[ END REDO THIS ]]]
 
 \section{Translation: Control Flow and Instructions
 \label{sec:control}}
@@ -1294,7 +1342,7 @@ $c$.
   \llvm{"\PH{\stateref(\B{c.mach})} \PH{\argname(\B{c})}"}
 \end{align*}
 
+\end{document}
 
 \include{Attachments}
 
-\end{document}
