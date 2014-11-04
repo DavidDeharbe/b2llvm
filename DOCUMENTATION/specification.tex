@@ -1,5 +1,6 @@
 \documentclass{llncs}
 
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{amssymb}
@@ -367,7 +368,7 @@ Figure~\ref{fig:llvm-grammar} presents a grammar of this subset of the LLVM.
       \alt \nt{const\_def} \alt \nt{var\_def} \alt \nt{function\_def} \\
       \nt{const\_decl} & ::= & \nt{name} \llvm{=} \llvm{external} \llvm{constant} \nt{type} \\
       \nt{type\_def} & ::= & \nt{name} \llvm{=} \llvm{type} \nt{type} \\
-       \nt{type} & ::= & \llvm{void} \alt \nt{itype} \alt \textcolor{blue}{$\left[ iliteral\ x\ type  \right]$} \alt \llvm{\{} \ListOf{\nt{type}} \llvm{\}} \alt \nt{type}\llvm{*} \\
+       \nt{type} & ::= & \llvm{void} \alt \nt{itype} \alt \texttt{[} \nt{iliteral} \llvm{x} \nt{type} \texttt{]} \alt \llvm{\{} \ListOf{\nt{type}} \llvm{\}} \alt \nt{type}\llvm{*} \\
       \nt{const\_def} & ::= & \nt{name} \llvm{=} \llvm{constant} \nt{type} \nt{iliteral} \\
       \nt{var\_def} & ::= & \nt{name} \llvm{=} \llvm{common} \llvm{global} \nt{type} \llvm{zeroinitializer} \\
       \nt{function\_decl} & ::= & \llvm{declare} \nt{type} \nt{name} \llvm{(} \ListOf{\nt{type}} \llvm{)}\\
@@ -378,15 +379,15 @@ Figure~\ref{fig:llvm-grammar} presents a grammar of this subset of the LLVM.
       & \alt & \nt{name} \llvm{=} \lalt \llvm{add} \alt \llvm{sub} \alt \llvm{mul} \alt \llvm{sdiv} \alt \llvm{srem} \ralt \nt{itype} \nt{exp} \llvm{,} \nt{exp} \\
       & \alt & \nt{name} \llvm{=} \llvm{icmp} \lalt \llvm{eq} \alt \llvm{ne} \alt \llvm{sgt} \alt \llvm{sge} \alt \llvm{slt} \alt \llvm{sle} \ralt \llvm{i1} \nt{exp} \llvm{,} \nt{exp}\\
       & \alt & \nt{name} \llvm{=} \llvm{call} \nt{type} \llvm{(} \ListOf{\nt{arg}} \llvm{)} \\
-      & \alt & \nt{name} \llvm{=} \llvm{getelementptr} \nt{type} \llvm{*} \nt{exp}\llvm{,} \nt{index}\llvm{,} \textcolor{blue}{\ListOf{ \nt{index}}}  \\
+      & \alt & \nt{name} \llvm{=} \llvm{getelementptr} \nt{type} \llvm{*} \nt{exp}\llvm{,} \nt{index}\llvm{,} \ListOf{ \nt{index}}  \\
       & \alt & \nt{name} \llvm{=} \llvm{load} \nt{type} \nt{exp} \\
       & \alt & \llvm{store} \nt{type} \nt{exp}, \nt{type} \llvm{*} \nt{exp} \\
-      & \alt & \textcolor{blue}{\nt{name} \llvm{=} \llvm{bitcast} \nt{type} \nt{name}, \nt{type} }\\
+      & \alt & \nt{name} \llvm{=} \llvm{bitcast} \nt{type} \nt{name}, \nt{type} \\
       & \alt & \llvm{br} \llvm{i1} \nt{exp} \llvm{,} \llvm{label} \nt{lbl} \llvm{,} \llvm{label} \nt{lbl} \\
       & \alt & \llvm{br} \llvm{label} \nt{lbl} \\
 %       & \alt & \llvm{switch} \nt{type} \nt{exp} \llvm{,} \llvm{branch} \nt{lbl} \llvm{[} \ListOf{\nt{branch}} \llvm{]} \\
       & \alt & \llvm{ret} \lalt \nt{type} \nt{exp} \alt \llvm{void} \ralt \\
-      \nt{exp} & ::= & \nt{name} \alt \nt{iliteral} \alt \llvm{getelementptr} \llvm{(} \nt{type} \nt{exp} \llvm{,} \nt{index} \llvm{,} \textcolor{blue}{\ListOf{ \nt{index}}}  \llvm{)} \\
+      \nt{exp} & ::= & \nt{name} \alt \nt{iliteral} \alt \llvm{getelementptr} \llvm{(} \nt{type} \nt{exp} \llvm{,} \nt{index} \llvm{,} \ListOf{\nt{index}}  \llvm{)} \\
       \nt{index} & ::= & \nt{itype} \nt{iliteral} \\
       \nt{branch} & ::= & \nt{iliteral} \nt{iliteral} \nt{lbl} \\
       \nt{arg} & ::= & \nt{type} \nt{exp}
@@ -789,6 +790,28 @@ state structure to pointer variable $p$ and then dereference $p$ to assign $v$:
 & \quad \llvm{\PH{v} = load \PH{t}* \PH{p}\nl"} \sep v \sep t
 \end{align*}
 
+\subsubsection{Records}
+
+Both B and LLVM include structure types, and the encoding is simple.
+A value of a B structure type is called a record, and it is directly
+encoded in LLVM as a literal of a LLVM structure type. The only
+difference between the two languages is that the field references are
+names in B, and positions starting from 0 in LLVM. 
+
+For example, the record \B{rec(flag: TRUE, balance: 10)} of type
+\B{struct(flag: BOOL, balance: INT)} is encoded in LLVM as the
+literal \llvm{\{ i1 1, i32 10\}}, of type \llvm{\{ i1, i32 \}}.
+
+Such encoding is specified by the following rules:
+\begin{align*}
+\trad{n}{\B{Record}} & \isdef \LET t, v \BE \trad{n.values}{\B{Values}} \IN
+\llvm{ \{ } \PH{t} \llvm{ \} } \sep \llvm{ \{ } \PH{ v } \llvm{ \} } \\
+\trad{h t}{\B{Values}} & \isdef \begin{array}[t]{l}
+  \LET t, v \BE \trad{h}{\B{Expr}} \AND t', v' \BE \trad{t}{\B{Values}} \IN \\
+  \quad \left(\PH{t} \llvm{,} \PH{t'}\right) \sep \left(\PH{t} \PH{v} \llvm{, } \PH{v'}\right) 
+\end{array} \\
+\trad{}{\B{Values}} & \isdef \llvm{""} \sep \llvm{""}
+\end{align*}
 
 \subsubsection{Comparisons}
 
@@ -877,12 +900,6 @@ is generated. Such code generation obeys the following principles:
 
 
 [[[ COMPLETE ]]]
-
-[[[ BEGIN REDO THIS ]]]
-
-\include{derivedTypes}
-
-[[[ END REDO THIS ]]]
 
 \section{Translation: Control Flow and Instructions
 \label{sec:control}}
@@ -1045,13 +1062,13 @@ variable.
 & \quad \quad \quad \llvm{i32 0, i32 \PH{\idx(\B{n})} \nl"} \sep v \sep t
 \end{align*}
 
-\paragraph{Becomes equal instructions} \textcolor{blue}{ must evaluate the
+\paragraph{Becomes equal instructions} must evaluate the
  target and the source of the assignment, and then copy the result of the 
 latter in the former, using the LLVM instruction \llvm{store}. The evaluation 
 of the target is defined with $\trad{}{lvalue}$, which yields the corresponding 
 LLVM source code $l$ and the variable $p$ containing the assigned location. The 
 evaluation of the source yields the corresponding code $r$, the variable $v$ 
-holding the result, and its type $t$. }
+holding the result, and its type $t$.
 
 \begin{align*}
 \begin{split}
@@ -1075,24 +1092,7 @@ The rule lvalue is:
 & \quad \quad \quad \llvm{i32 0, i32 \PH{\idx(\B{n})} \nl"} \sep v \sep t
 \end{align*}
 
-\textcolor{blue}{ The expressions have elements represented by pointers that need a special 
-care. The attributions between these elements are made  directly by the memory 
-address.  However, the expression resolution are made by parts, where the 
-partial results are stored to temporary variables. Therefore, the expression 
-resolution with pointers needs an additional instruction $LOAD$ for store the 
-partial results. This translation is represented by $ValueItem$.} 
-
-\begin{align*}
-\begin{split}
-  \trad{n}{\B{ValueItem}} \isdef \\
-   & \LET \ell = \lbl  \IN\\
-   & \IF \B{n} \mbox{ is \B{RecField}} \THEN p' \sep v' \sep t' = \trad{\B{n}}{\B{RecField}} \\
-   & \ELSIF \B{n} \mbox{ is \B{ArrayItem}} \THEN p' \sep v' \sep t' = \trad{\B{n}}{\B{ArrayItem}} \\
-   & \llvm{"\PH{p'} \PH{\ell}  = load  \PH{t'}* \PH{v'} \nl"} \\
-   & \sep  \ell  \sep t'\\
-\end{split}
-\end{align*}
-
+[[[ REDO ]]]
 
 \paragraph{Call up} instructions apply B operations with some values and obtain
 results. The LLVM code generator produces instructions to evaluate the operation
@@ -1341,6 +1341,17 @@ $c$.
 \trad{\B{c}, \argname}{arg} \isdef& 
   \llvm{"\PH{\stateref(\B{c.mach})} \PH{\argname(\B{c})}"}
 \end{align*}
+
+\pagebreak
+
+\appendix
+
+[[[ BEGIN REDO THIS ]]]
+
+\include{derivedTypes}
+
+[[[ END REDO THIS ]]]
+
 
 \end{document}
 

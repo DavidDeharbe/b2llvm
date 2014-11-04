@@ -1,7 +1,7 @@
 
 NAME= specification
 
-all: $(NAME).pdf translation.pdf
+all: $(NAME).pdf
 
 $(NAME).pdf:
 
