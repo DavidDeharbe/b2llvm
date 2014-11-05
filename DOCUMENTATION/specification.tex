@@ -276,7 +276,7 @@ Note that the translation presented in this paper only considers types \B{INT}
 	\hline
   	\multicolumn{3}{|c|}{Structure : \B{Structure}} \\
         \hline
-        \B{elements} & : & seq \B{Field} \\
+        \B{fields} & : & seq \B{Field} \\
 	\hline
   	\multicolumn{3}{|c|}{Structure field: \B{Field}} \\
         \hline
@@ -290,8 +290,8 @@ Note that the translation presented in this paper only considers types \B{INT}
 	\hline
 	\multicolumn{3}{|c|}{Record field : \B{RecField}} \\
         \hline
-	\B{base} & : &  \B{Exp} \\
-	\B{element} & : & \B{Name} \\
+	\B{base} & : &  \sout{\B{Exp}} \B{Record} \\
+	\B{id} & : & \B{Name} \\
 	\hline
         \multicolumn{3}{|c|}{Array type : \B{ArrayType}} \\
         \hline 
@@ -792,15 +792,18 @@ state structure to pointer variable $p$ and then dereference $p$ to assign $v$:
 
 \subsubsection{Records}
 
-Both B and LLVM include structure types, and the encoding is simple.
+Since both B and LLVM include structure types, the encoding is simple.
 A value of a B structure type is called a record, and it is directly
 encoded in LLVM as a literal of a LLVM structure type. The only
 difference between the two languages is that the field references are
-names in B, and positions starting from 0 in LLVM. 
+names in B, and positions starting from 0 in LLVM. Note that, although
+fields are named in B structure, the order is relevant, for a given structure
+type, all values have fields in the same order.
 
-For example, the record \B{rec(flag: TRUE, balance: 10)} of type
-\B{struct(flag: BOOL, balance: INT)} is encoded in LLVM as the
-literal \llvm{\{ i1 1, i32 10\}}, of type \llvm{\{ i1, i32 \}}.
+The encoding is done field-wise. For example, the record \B{rec(flag:
+  TRUE, balance: 10)} of type \B{struct(flag: BOOL, balance: INT)} is
+encoded in LLVM as the literal \llvm{\{ i1 1, i32 10\}}, of type
+\llvm{\{ i1, i32 \}}.
 
 Such encoding is specified by the following rules:
 \begin{align*}
@@ -808,9 +811,29 @@ Such encoding is specified by the following rules:
 \llvm{ \{ } \PH{t} \llvm{ \} } \sep \llvm{ \{ } \PH{ v } \llvm{ \} } \\
 \trad{h t}{\B{Values}} & \isdef \begin{array}[t]{l}
   \LET t, v \BE \trad{h}{\B{Expr}} \AND t', v' \BE \trad{t}{\B{Values}} \IN \\
-  \quad \left(\PH{t} \llvm{,} \PH{t'}\right) \sep \left(\PH{t} \PH{v} \llvm{, } \PH{v'}\right) 
+  \quad \left(\PH{t} \llvm{,} \PH{t'}\right) \sep \left(\PH{t}~\PH{v} \llvm{, } \PH{v'}\right) 
 \end{array} \\
 \trad{}{\B{Values}} & \isdef \llvm{""} \sep \llvm{""}
+\end{align*}
+
+\subsubsection{Record fields}
+
+In B, the access of a field in a record is performed by suffixing the
+record with the name of the field, e.g. \B{rec(flag: TRUE, balance:  10)'flag}.
+
+In LLVM, a record is an aggregate value, and access is performed by
+getting the address, in the variable carrying the value, of the field
+of interest (instruction \llvm{getelementptr}), and then loading the
+corresponding value to a temporary variable (instruction \llvm{load}).
+
+\begin{align*}
+\lefteqn{\trad{n}{\B{RecField}} \isdef \LET i = \text{position}(\B{n.id}, \B{n.base.type.fields}) \IN} \\
+& \LET t_f = \trad{\B{n.base.type.fields[$i$].type}}{\B{Type}} \AND
+p_r, v_r, t_r = \trad{\B{n.base}}{\B{Record}} \AND \\
+& \quad \quad  p_f \BE \variable \AND v_f \BE \variable \IN \\
+& \quad \llvm{"\PH{p_r}} \\
+& \quad \quad \llvm{\PH{p_f} = getelementptr \PH{t_r}* \PH{v_r}, i32 0, i32 \PH{i}} \\
+& \quad \quad \llvm{\PH{v_f} = load \PH{t_f}* \PH{p_f} \nl"} \sep v_f \sep t_f
 \end{align*}
 
 \subsubsection{Comparisons}
@@ -1029,39 +1052,6 @@ instructions. Its definition is specialized for each class of instructions as
 detailed in the rest of this section. Note that a new block is created after
 each \B{If} and \B{While} instruction.
 
-\paragraph{Becomes equal instructions} must evaluate the target and the source
-of the assignment, and then copy the result of the latter in the former, using
-the LLVM instruction \llvm{store}. The evaluation of the target is defined with
-$\trad{}{lv}$, which yields the corresponding LLVM source code $l$ and the
-variable $p$ containing the assigned location. The evaluation of the source
-yields the corresponding code $r$, the variable $v$ holding the result, and its
-type $t$.
-\begin{align*}
-\begin{split}
-  \trad{a}{\B{Beq}} \isdef
-  & \LET l \sep p \sep t'= \trad{i.lhs}{lv} \AND r \sep v \sep t \BE \trad{i.rhs}{\B{Expr}} \IN \\
-  & \llvm{"\PH{l}} \\
-  & \llvm{\PH{r}} \\
-  & \llvm{store \PH{t} \PH{v}, \PH{t'} \PH{p} \nl"}
-%   & l \conc r \conc
-%   \llvm{"store "} \conc t \conc \texttt{" "} \conc v \conc \llvm{", "}
-%   \conc t \conc \llvm{"* "} \conc p \conc \nl
-\end{split}
-\end{align*}
-The assignment target may be either local to the operation or a state
-variable. In the former case, it can be referenced by the corresponding LLVM
-identifier. In the latter case, it is represented as an element of the state
-structure $\Sigma$, and its address must be calculated and assigned to a new temporary
-variable.
-\begin{align*}
-\lefteqn{\trad{n}{lv} \isdef} \\
-& \LET t \BE \llvm{"\PH{\trad{\B{n.type}}{Type}} *"} \IN \\
-& \quad \IF \mbox{\B{n} is a local variable} \THEN \llvm{""} \sep \local(\B{n}) \sep t \\
-& \quad \ELSE \LET v \BE \variable \IN \\
-& \quad \quad \llvm{"\PH{v} = getelementptr \PH{\state(\B{n.root})}* \self,} \\
-& \quad \quad \quad \llvm{i32 0, i32 \PH{\idx(\B{n})} \nl"} \sep v \sep t
-\end{align*}
-
 \paragraph{Becomes equal instructions} must evaluate the
  target and the source of the assignment, and then copy the result of the 
 latter in the former, using the LLVM instruction \llvm{store}. The evaluation 
@@ -1083,16 +1073,21 @@ holding the result, and its type $t$.
 The rule lvalue is:
 \begin{align*}
 \lefteqn{\trad{n}{lvalue} \isdef} \\
-& \LET t = \llvm{"\PH{\trad{\B{n.type}}{Type}}"} \IN \\
+& \LET t = \llvm{"\PH{\trad{\B{n.type}}{\B{Type}}}"} \IN \\
 & \quad \IF \mbox{\B{n} is a local variable} \THEN \llvm{""} \sep \local(\B{n}) \sep t \\
-& \quad \IF \mbox{\B{n} is an ArrayItem} \THEN  \trad{n}{ArrayItem} \\
-& \quad \IF \mbox{\B{n} is a RecField} \THEN  \trad{n}{RecField} \\
+& \quad \IF \mbox{\B{n} is a RecField} \THEN  \trad{n}{\B{RecFieldL}} \\
 & \quad \ELSE \LET v = \variable \IN \\
 & \quad \quad \llvm{"\PH{v} = getelementptr \PH{\state(\B{n.root})}* \%self\$,} \\
 & \quad \quad \quad \llvm{i32 0, i32 \PH{\idx(\B{n})} \nl"} \sep v \sep t
 \end{align*}
 
-[[[ REDO ]]]
+\begin{align*}
+\lefteqn{\trad{n}{\B{RecFieldL}} \isdef \LET i = \text{position}(\B{n.id}, \B{n.base.type.fields}) \IN} \\
+& \LET p_r, v_r, t_r = \trad{\B{n.base}}{\B{Record}} \AND p_f \BE \variable \IN \\
+& \quad \llvm{"\PH{p_r}} \\
+& \quad \quad \llvm{\PH{p_f} = getelementptr \PH{t_r}* \PH{v_r}, i32 0, i32 \PH{i}"} \sep p_f \sep \llvm{"\PH{t_f}*"}
+\end{align*}
+
 
 \paragraph{Call up} instructions apply B operations with some values and obtain
 results. The LLVM code generator produces instructions to evaluate the operation
