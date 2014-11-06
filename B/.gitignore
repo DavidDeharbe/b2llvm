@@ -1,0 +1,24 @@
+# --- Miscellaneous editor-specific files for back-up copies
+*~
+\#*
+
+# --- Atelier B files
+*.chk
+*.db
+*.dep
+*.dot
+*.lib
+*.nf
+*.pmi
+*.pmi1
+*.pmi2
+*.po
+*.pog
+*.poxml
+*.tse
+*.why
+cpp/
+hia/
+.usedby*
+.project
+.lib

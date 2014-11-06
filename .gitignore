@@ -1,20 +1,19 @@
-
-Grammar/Grammar copy_old.tex
-
-Grammar/.gitignore
-
+# --- LaTeX files
 *.aux
-
 *.log
-
 *.out
-
-specification.pdf
-
+*.pdf
+*.bbl
 *.toc
 
+# --- Python files
 *.pyc
 
+# --- Python coverage tool
 .coverage
-
 coverage_html
+
+# --- Miscellaneous editor-specific files for back-up copies
+*~
+\#*
+
