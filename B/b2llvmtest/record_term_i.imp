@@ -1,0 +1,33 @@
+/* record_term_i
+ * Author: 
+ * Creation date: 11/08/14
+ */
+
+IMPLEMENTATION record_term_i
+REFINES record_term
+CONCRETE_VARIABLES
+    watch
+INVARIANT
+    watch : struct(mm: INT, ss: INT)
+INITIALISATION
+    watch := rec(mm : 0, ss : 0)
+OPERATIONS
+    tick = 
+    BEGIN
+        IF watch'ss = 59 THEN
+            IF watch'mm = 59 THEN
+                watch := rec(mm : 0, ss: 0)
+            ELSE
+                watch := rec(mm : watch'mm+1, ss: 0)
+            END
+        ELSE
+            watch'ss := watch'ss + 1
+        END
+    END
+    ;
+    reset =
+    BEGIN
+        watch'mm := 0;
+        watch'ss := 0
+    END
+END

@@ -1,0 +1,2043 @@
+<Machine name='chronometer_i' type='implementation'>
+<Abstraction>chronometer</Abstraction>
+<Sees>
+<Referenced_Machine>
+<Name>duration</Name>
+</Referenced_Machine>
+</Sees>
+<Values>
+<Valuation ident='CAPACITY'>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Valuation>
+<Valuation ident='duration_zero'>
+<Record>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Record_Item>
+<Record_Item label='se'>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Record_Item>
+<Record_Item label='hu'>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Record_Item>
+</Record>
+</Valuation>
+</Values>
+<Concrete_Constants>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Concrete_Constants>
+<Concrete_Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Concrete_Variables>
+<Properties>
+<Expression_Comparison operator=':'>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Struct>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='se'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='hu'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+</Struct>
+</Expression_Comparison>
+</Properties>
+<Invariant>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator=':'>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='STATE'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='STATE' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Struct>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='se'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='hu'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+</Struct>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Struct>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='se'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='hu'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+</Struct>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='elapsed'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='duration_cs'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='display'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='('>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='duration_cs'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Invariant>
+<Initialisation>
+<Bloc_Substitution>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='STOPPED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Bloc_Substitution>
+</Initialisation>
+<Operations>
+<Operation name='tick'>
+<Body>
+<If_Substitution elseif='no'>
+<Condition>
+<Binary_Predicate operator='or'>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='LAP_RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Binary_Predicate>
+</Condition>
+<Then>
+<VAR_IN>
+<Variables>
+<Identifier value='now'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Body>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='now'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='hu' />
+</Binary_Expression>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='se' />
+</Binary_Expression>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='mi' />
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='now'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Identifier value='CAPACITY'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='hu' />
+</Binary_Expression>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='se' />
+</Binary_Expression>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='mi' />
+</Binary_Expression>
+</Variables>
+<Values>
+<Identifier value='then'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<If_Substitution elseif='no'>
+<Condition>
+<Expression_Comparison operator='='>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Condition>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</If_Substitution>
+</Nary_Substitution>
+</Body>
+</VAR_IN>
+</Then>
+</If_Substitution>
+</Body>
+</Operation>
+<Operation name='button1'>
+<Body>
+<Case_Substitution>
+<Value>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Choices>
+<Choice>
+<Value>
+<Identifier value='STOPPED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='LAP_RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='LAP_PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='LAP_PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='LAP_RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+</Choices>
+</Case_Substitution>
+</Body>
+</Operation>
+<Operation name='button2'>
+<Body>
+<Case_Substitution>
+<Value>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Choices>
+<Choice>
+<Value>
+<Identifier value='STOPPED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Skip />
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='LAP_RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Bloc_Substitution>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='STOPPED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='elapsed_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='duration_zero'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Bloc_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='LAP_RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='RUNNING'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+<Choice>
+<Value>
+<Identifier value='LAP_PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Value>
+<Then>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='state'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Identifier value='PAUSED'>
+<Attributes>
+<TypeInfo>
+<Identifier value='STATE' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Values>
+</Assignement_Substitution>
+</Then>
+</Choice>
+</Choices>
+</Case_Substitution>
+</Body>
+</Operation>
+<Operation name='digits'>
+<Output_Parameters>
+<Identifier value='d1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='d2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='d3'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='d4'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='d5'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='d6'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Output_Parameters>
+<Body>
+<Nary_Substitution operator=';'>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d1'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='mi' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d2'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='mi' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d3'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='se' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d4'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='se' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d5'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='/'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='hu' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+<Assignement_Substitution>
+<Variables>
+<Identifier value='d6'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Values>
+<Binary_Expression operator='mod'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='display_i'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='hu' />
+</Binary_Expression>
+<Integer_Literal value='10'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Values>
+</Assignement_Substitution>
+</Nary_Substitution>
+</Body>
+</Operation>
+</Operations>
+</Machine>

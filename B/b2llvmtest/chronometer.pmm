@@ -1,0 +1,8 @@
+﻿THEORY User_Pass IS
+Operation(AssertionLemmas) & ff(0) & pr;
+Operation(Initialisation) & ff(0) & pr;
+Operation(tick) & ff(0) & pr;
+Operation(button1) & ff(0) & pr;
+Operation(button2) & ff(0) & pr;
+Operation(tick) & ff(0) & eh(CAPACITY) & ss & dd & pr & ah(0<=elapsed) & dd & pr & pr & dc(elapsed = 359999) & dc(elapsed<=359998) & dd & pr & dd & pr
+END 

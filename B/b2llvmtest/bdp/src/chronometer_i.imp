@@ -1,0 +1,82 @@
+﻿/* chronometer_i
+* Author: 
+* Creation date: 06/11/14
+*/
+
+IMPLEMENTATION chronometer_i
+REFINES chronometer
+SEES duration
+CONCRETE_CONSTANTS
+    duration_zero
+PROPERTIES
+    duration_zero : struct ( mi : 0 .. 59 , se : 0 .. 59 , hu : 0 .. 99 )
+VALUES
+    CAPACITY = 60 * 60 * 100 ;
+    duration_zero = rec ( mi : 0 , se : 0 , hu : 0 )
+CONCRETE_VARIABLES
+    state ,
+    elapsed_i /* centiseconds elapsed*/ ,
+    display_i /* time showed on display */
+INVARIANT
+    state : STATE &
+    elapsed_i : struct ( mi : 0 .. 59 , se : 0 .. 59 , hu : 0 .. 99 ) &
+    display_i : struct ( mi : 0 .. 59 , se : 0 .. 59 , hu : 0 .. 99 ) &
+    elapsed = duration_cs ( elapsed_i ) &
+    display = duration_cs ( display_i )
+INITIALISATION
+    BEGIN
+        state := STOPPED ;
+        elapsed_i := duration_zero ;
+        display_i := duration_zero
+    END
+OPERATIONS
+    tick =
+    IF state = RUNNING or state = LAP_RUNNING THEN
+        VAR now , then IN
+            now := elapsed_i ' hu + 100 * ( elapsed_i ' se + 60 * elapsed_i ' mi ) ;
+            then := ( now + 1 ) mod CAPACITY ;
+            elapsed_i ' hu := then mod 100 ;
+            then := then / 100 ;
+            elapsed_i ' se := then mod 60 ;
+            then := then / 60 ;
+            elapsed_i ' mi := then ;
+            IF state = RUNNING THEN
+                display_i := elapsed_i
+            END
+        END
+    END
+    ;
+    button1 =
+    CASE state OF
+        EITHER STOPPED THEN state := RUNNING
+        OR RUNNING THEN state := PAUSED
+        OR PAUSED THEN state := RUNNING
+        OR LAP_RUNNING THEN state := LAP_PAUSED
+        OR LAP_PAUSED THEN state := LAP_RUNNING
+        END
+    END ;
+    button2 =
+    CASE state OF
+        EITHER STOPPED THEN skip
+        OR RUNNING THEN state := LAP_RUNNING
+        OR PAUSED THEN
+            BEGIN
+                state := STOPPED ;
+                elapsed_i := duration_zero ;
+                display_i := duration_zero
+            END
+        OR LAP_RUNNING THEN state := RUNNING
+        OR LAP_PAUSED THEN state := PAUSED
+        END
+    END
+    ;
+    d1 , d2 , d3 , d4 , d5 , d6 <-- digits =
+    BEGIN
+        d1 := display_i ' mi / 10 ;
+        d2 := display_i ' mi mod 10 ;
+        d3 := display_i ' se / 10 ;
+        d4 := display_i ' se mod 10 ;
+        d5 := display_i ' hu / 10 ;
+        d6 := display_i ' hu mod 10
+    END
+END
