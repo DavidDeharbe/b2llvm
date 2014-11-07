@@ -3,6 +3,7 @@ target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.10.0"
 
 @coef = global [3 x i32] [i32 4, i32 5, i32 6], align 4
+@dir = global [8 x [2 x i32]] [[2 x i32] [i32 -1, i32 -1], [2 x i32] [i32 -1, i32 0], [2 x i32] [i32 -1, i32 1], [2 x i32] [i32 0, i32 1], [2 x i32] [i32 1, i32 1], [2 x i32] [i32 1, i32 0], [2 x i32] [i32 1, i32 -1], [2 x i32] [i32 0, i32 -1]], align 16
 @a = common global [128 x [32 x i32]] zeroinitializer, align 16
 
 ; Function Attrs: nounwind ssp uwtable
