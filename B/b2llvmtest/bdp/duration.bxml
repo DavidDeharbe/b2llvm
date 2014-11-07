@@ -1,0 +1,556 @@
+<Machine name='duration' type='abstraction'>
+<Abstract_Constants>
+<Identifier value='DURATION'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='duration_cs'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Abstract_Constants>
+<Properties>
+<Nary_Predicate operator='&amp;'>
+<Expression_Comparison operator='='>
+<Identifier value='DURATION'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Struct>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='se'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='hu'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+</Struct>
+</Expression_Comparison>
+<Expression_Comparison operator=':'>
+<Identifier value='duration_cs'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Binary_Expression operator='--&gt;'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Struct>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Record_Item label='mi'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='se'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='59'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+<Record_Item label='hu'>
+<Binary_Expression operator='..'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='0'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='99'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+</Record_Item>
+</Struct>
+<Identifier value='INT'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Identifier value='INTEGER' />
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Binary_Expression>
+</Expression_Comparison>
+<Expression_Comparison operator='='>
+<Identifier value='duration_cs'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Quantified_Expression type='%'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Binary_Expression operator='*'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+<Identifier value='INTEGER' />
+</Binary_Expression>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+<Variables>
+<Identifier value='dd'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Variables>
+<Predicate>
+<Expression_Comparison operator=':'>
+<Identifier value='dd'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='DURATION'>
+<Attributes>
+<TypeInfo>
+<Unary_Expression operator='POW'>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</Unary_Expression>
+</TypeInfo>
+</Attributes>
+</Identifier>
+</Expression_Comparison>
+</Predicate>
+<Body>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='+'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='dd'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='hu' />
+</Binary_Expression>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='dd'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='se' />
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Binary_Expression operator='*'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Integer_Literal value='60'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+<Integer_Literal value='100'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+</Integer_Literal>
+</Binary_Expression>
+<Binary_Expression operator='&apos;'>
+<Attributes>
+<TypeInfo>
+<Identifier value='INTEGER' />
+</TypeInfo>
+</Attributes>
+<Identifier value='dd'>
+<Attributes>
+<TypeInfo>
+<Struct>
+<Record_Item label='mi'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='se'>
+<Identifier value='INTEGER' />
+</Record_Item>
+<Record_Item label='hu'>
+<Identifier value='INTEGER' />
+</Record_Item>
+</Struct>
+</TypeInfo>
+</Attributes>
+</Identifier>
+<Identifier value='mi' />
+</Binary_Expression>
+</Binary_Expression>
+</Binary_Expression>
+</Body>
+</Quantified_Expression>
+</Expression_Comparison>
+</Nary_Predicate>
+</Properties>
+<Initialisation>
+<Skip />
+</Initialisation>
+</Machine>

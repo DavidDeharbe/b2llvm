@@ -1,0 +1,23 @@
+/* lambda_term_i
+ * Author: 
+ * Creation date: 11/08/14
+ */
+
+IMPLEMENTATION lambda_term_i
+REFINES lambda_term
+SEES lambda_term_def
+CONCRETE_VARIABLES
+    val
+INVARIANT
+    val : INT
+INITIALISATION
+    val := 0
+OPERATIONS
+    reset = val := 0
+    ;
+    inc = IF val < MAXINT THEN val := next(val) ELSE val := 0 END
+    ;
+    dec = IF val > 0 THEN val := val - 1 ELSE val := MAXINT END
+    ;
+    res <-- get = res := val
+ END

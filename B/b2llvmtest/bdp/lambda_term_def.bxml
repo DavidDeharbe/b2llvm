@@ -1,0 +1,99 @@
+<Machine name='lambda_term_def' type='abstraction'>
+  <Abstract_Constants>
+    <Identifier value='next'>
+      <Attributes>
+	<TypeInfo>
+	  <Unary_Expression operator='POW'>
+	    <Binary_Expression operator='*'>
+	      <Identifier value='INTEGER' />
+	      <Identifier value='INTEGER' />
+	    </Binary_Expression>
+	  </Unary_Expression>
+	</TypeInfo>
+      </Attributes>
+    </Identifier>
+  </Abstract_Constants>
+  <Properties>
+    <Expression_Comparison operator='='>
+      <Identifier value='next'>
+	<Attributes>
+	  <TypeInfo>
+	    <Unary_Expression operator='POW'>
+	      <Binary_Expression operator='*'>
+		<Identifier value='INTEGER' />
+		<Identifier value='INTEGER' />
+	      </Binary_Expression>
+	    </Unary_Expression>
+	  </TypeInfo>
+	</Attributes>
+      </Identifier>
+      <Quantified_Expression type='%'>
+	<Attributes>
+	  <TypeInfo>
+	    <Unary_Expression operator='POW'>
+	      <Binary_Expression operator='*'>
+		<Identifier value='INTEGER' />
+		<Identifier value='INTEGER' />
+	      </Binary_Expression>
+	    </Unary_Expression>
+	  </TypeInfo>
+	</Attributes>
+	<Variables>
+	  <Identifier value='arg'>
+	    <Attributes>
+	      <TypeInfo>
+		<Identifier value='INTEGER' />
+	      </TypeInfo>
+	    </Attributes>
+	  </Identifier>
+	</Variables>
+	<Predicate>
+	  <Expression_Comparison operator=':'>
+	    <Identifier value='arg'>
+	      <Attributes>
+		<TypeInfo>
+		  <Identifier value='INTEGER' />
+		</TypeInfo>
+	      </Attributes>
+	    </Identifier>
+	    <Identifier value='INT'>
+	      <Attributes>
+		<TypeInfo>
+		  <Unary_Expression operator='POW'>
+		    <Identifier value='INTEGER' />
+		  </Unary_Expression>
+		</TypeInfo>
+	      </Attributes>
+	    </Identifier>
+	  </Expression_Comparison>
+	</Predicate>
+	<Body>
+	  <Binary_Expression operator='+'>
+	    <Attributes>
+	      <TypeInfo>
+		<Identifier value='INTEGER' />
+	      </TypeInfo>
+	    </Attributes>
+	    <Identifier value='arg'>
+	      <Attributes>
+		<TypeInfo>
+		  <Identifier value='INTEGER' />
+		</TypeInfo>
+	      </Attributes>
+	    </Identifier>
+	    <Integer_Literal value='1'>
+	      <Attributes>
+		<TypeInfo>
+		  <Identifier value='INTEGER' />
+		</TypeInfo>
+	      </Attributes>
+	    </Integer_Literal>
+	  </Binary_Expression>
+	</Body>
+      </Quantified_Expression>
+    </Expression_Comparison>
+  </Properties>
+  <Initialisation>
+    <Skip />
+  </Initialisation>
+</Machine>
