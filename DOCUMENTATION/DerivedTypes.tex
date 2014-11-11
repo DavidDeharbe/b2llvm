@@ -3,60 +3,6 @@
 \subsection{Translation of structures and arrays}
 \label{sec:StructArray}
 
-Two approaches are possible to support arrays and structures. An approach is 
-importing reusable libraries of AtelierB that are reported in the official 
-document of ClearSy\footnote{\url{http://www.atelierb.eu/ressources/DOC/english/reusable-components-reference.pdf}}. 
-This approach is supported, but the generated code is more complex and it needs 
-more intermediate steps to manipulate the data of imported components. 
-Moreover, this approach allows dynamic allocation for arrays, but it is 
-strongly not recommended for safety-critical systems. A second approach enjoys 
-the direct correspondence between B0 native types and LLVM and this approach 
-is presented here.
-
-\subsubsection{Structure} \VGM{It is not implemented yet, because it requires generating an XML example.}
-The structure declaration defines a list of variables to be placed under one 
-name, allowing several variables to be accessed by one base name. This example  
-initializes a structure, and gets and sets one value of xx'balance. 
- 
-\begin{pascalcode}
-xx := rec(id:1, balance:10);
-xx'balance := xx'balance -1;
-\end{pascalcode}
-The lines 1 and 2 are represented in translation in LLVM code:
-
-\begin{llvmcode}
-%1 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 0
-store i32 1, i32 * %1
-%2 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
-store i32 10, i32 * %2
-
-%3 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
-%4 = load i32* %3
-%5 = sub nsw i32 %4, 1
-%6 = getelementptr %struct.R_1* @Rec__account, i32 0, i32 1
-store i32 %5, i32* %6
-\end{llvmcode}
-
-The $RecField$ rule gets an element value from the record. The same rule is 
-used on the left side of attribution as a $LValue$ and right side of 
-attribution as an $Expression$. The functions \SBPos(n) and \SBType(n)  get 
-respectively the position and type of $n$ element in the structure. 
-
-\begin{align*}
-\begin{split}
-  \trad{n}{\B{RecField}} \isdef \\
-   & \IF \B{n.type} \mbox{ is \B{BOOL or NAT or INT} } \THEN \\
-   &\quad  \LET \ell = \lbl  \AND  \PH{t} = n.type \AND \PH{v} = n.element \IN\\
-   &\quad  \llvm{"\PH{\ell} = getelementptr \PH{t}* \PH{v}, i32 0, i32  \SBPos(\B{n})\nl"} \\
-   &\quad  \sep  \ell  \sep \SBType(\B{n})\\
-\end{split}
-\end{align*}
-
-The attribution from record structure to a record structure variable, line 1 
-from last B code example, is translated by a sequence of application of rule 
-$RecField$. The nested structures will be designed in the next project phase.
-%TODO after test the first examples.
-
 \subsubsection{Arrays}
 
 The arrays store a fixed-size sequential collection of elements with the same type. 
@@ -81,27 +27,6 @@ elements are defining an array, getting an element and setting an
 element.
 
 \subsubsection{Declaring an array}
-
-
-The essential elements of the array are its name, size and type. 
-The size of ``e'' array with the indexes (i1,...,in) are defined according 
-to the formula:\\
- $size(e) = (e.i1\_end - e.i1\_star+1) * ... * (e.in\_end - e.in\_start+1)$.
-
-The following code declares a multidimensional global array called ``Array2'' 
-with 6000 (10*20*30) integer numbers with 32 bits and initialized with zero.
-
-\begin{llvmcode}
-@array2 = internal global [10 x [20 x [30 x i32]]] zeroinitializer, align 16
-\end{llvmcode}
-
-\VGM{It is not implemented yet, because it requires generating an XML example.}
-The following example updates several elements from an array in B, but it is not present in B0 grammar.
-
-\begin{pascalcode}
-array2 := array2 <+ {1|->2|->0|->4,  1|->2|->1|->5}
-\end{pascalcode}
-An alternative  way to represent these updating in B0 is using sequential attribution:
 
 \begin{pascalcode}
 array2(1,2,0) := 4;
@@ -213,12 +138,4 @@ The \trad{}{ShiftExp} rule does a subtraction and this operation must have opera
 &\quad \ELSE \\ 
 &\quad \quad \llvm{"\PH{\ell}= bitcast \PH{t'} \PH{v'} , \PH{t}\nl"} \sep v \sep l \sep t \\ 
 \end{align*}
-
-\paragraph{Restriction on array:} The translation of direct attribution
- between arrays is not yet supported, for example:
-
-\begin{pascalcode}
- array1 := array2;
-\end{pascalcode}
-
 

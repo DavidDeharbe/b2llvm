@@ -12,6 +12,7 @@
 \usepackage{minted}
 \usepackage{array} 
 \usepackage[normalem]{ulem}
+\usepackage{cooltooltips}
 
 \pagestyle{headings}
 
@@ -302,6 +303,10 @@ Note that the translation presented in this paper only considers types \B{INT}
         \hline
 	\multicolumn{3}{c}{ seq \B{Map} \alt \B{Product} \alt \B{Name}  }\\
 	\hline
+  	\multicolumn{3}{|c|}{Set : \B{Set}} \\
+        \hline
+	\B{elem} & : & seq \B{Exp} \\
+	\hline
   	\multicolumn{3}{|c|}{Ordered pair : \B{Map}} \\
         \hline
 	\B{arg1} & : & seq \B{Exp}\\ 
@@ -309,8 +314,8 @@ Note that the translation presented in this paper only considers types \B{INT}
 	\hline
   	\multicolumn{3}{|c|}{Cartesian product : \B{Product}} \\
         \hline
-	\B{arg1} & : & seq \B{Exp}\\ 
-	\B{arg2} & : & \B{Exp}\\ 	
+	\B{dom} & : & seq \B{Exp}\\ 
+	\B{img} & : & \B{Set} \\ 	
 	\hline
 	\multicolumn{3}{|c|}{Access array : \B{ArrayItem}} \\
         \hline
@@ -532,12 +537,21 @@ transitively imported from implementation $\B{n}$.
 \item $\trimportedinstances(\B{n}) \isdef \ldots$ to get the set of machines
 instances transitively imported from implementation $\B{n}$.
 \item $\idx(\B{n}) \isdef \mathit{index}(\B{n}, \B{n.root.impo} \conc
-  \B{n.root.vari})$ to get, from a given concrete variable $\B{n}$, the position
-  of the corresponding element in the structure representing the state of the
-  implementation. Here where $\mathit{index}(e, s)$ is a function that returns
-  the position of $e$ in sequence $s$ and $\conc$ is the concatenation operator
-  for sequences.
+  \B{n.root.vari})$ to get, from a given concrete variable $\B{n}$,
+  the position of the corresponding element in the structure
+  representing the state of the implementation. Here where
+  $\mathit{index}(e, s)$ is a function that returns the position of
+  $e$ in sequence $s$. 
+
+  $index$ is generalized to indicate the position of an integer within
+  an interval (starting from 1).
 \end{itemize}
+\newcommand{\mtyseq}[0]{\ensuremath{\langle \rangle}}
+\newcommand{\fst}[0]{\ensuremath{\mathbf{fst}}}
+\newcommand{\rst}[0]{\ensuremath{\mathbf{rst}}} $\mtyseq$, $\fst$,
+$\rst$ and $\conc$ denote the empty sequence, the first element, the
+sequence of all but the first element, and the concatenation
+operation.
 
 \section{Translation: Modularity Aspects}
 \label{sec:module}
@@ -680,6 +694,7 @@ of \B{n}.
 \end{align*}
 
 \subsubsection{Arrays}
+\label{sec:types:arrays}
 
 Atelier-B has a very precise definition of what kind of data its code
 generator considers as array. We present it and generalize it to
@@ -709,8 +724,6 @@ Code generation take into account several aspects:
 \end{itemize}
 
 \newcommand{\card}[0]{\mathbf{card}}
-\newcommand{\fst}[0]{\ensuremath{\mathbf{fst}}}
-\newcommand{\rst}[0]{\ensuremath{\mathbf{rst}}}
 \newcommand{\twodots}[0]{..}
 
 The second point is addresssed by defining $\card$ to yield the
@@ -724,11 +737,10 @@ cardinality of simple concrete set:
 The two remaining points are taken into account in the translation of
 B implementable array types into LLVM array types.
 \begin{align*}
-  \trad{n}{ArrayType} \isdef
-  & \LET s \BE \card (\fst(\B{n.dom})) \AND \\
-  & \quad et \BE \IF |n.dom| = 1 \THEN \trad{n.ran}{Type} \\
-  & \quad \quad \ELSE \trad{\B{(dom = \rst(n.dom), ran = n.ran)}}{ArrayType} \\
-  & \IN \llvm{"[ \PH{s} x \PH{et} ]"}
+  \trad{n}{\B{ArrayType}} \isdef & \textit{ArrayType}(\B{n.dom}, \trad{n.ran}{\B{Type}}) \\
+  \textit{ArrayType}(d, t) \isdef & \IF |d| = 0 \THEN t \\
+  & \ELSE \LET s \BE \card(\fst(d)) \AND t' \BE \textit{ArrayType}(\rst(d), t) \\
+  & \IN \llvm{"[ \PH{s} x \PH{t'} ]"}
 \end{align*}
 Note that this is strictly more general than what is currently
 considered as implementable in Atelier-B.
@@ -834,6 +846,122 @@ p_r, v_r, t_r = \trad{\B{n.base}}{\B{Record}} \AND \\
 & \quad \llvm{"\PH{p_r}} \\
 & \quad \quad \llvm{\PH{p_f} = getelementptr \PH{t_r}* \PH{v_r}, i32 0, i32 \PH{i}} \\
 & \quad \quad \llvm{\PH{v_f} = load \PH{t_f}* \PH{p_f} \nl"} \sep v_f \sep t_f
+\end{align*}
+
+\subsubsection{Arrays}
+
+In B, full arrays may be evaluated and assigned. This is also the case
+for LLVM. The B notation offers three syntactic constructions to
+denote array values:
+\begin{itemize}
+\item a name that denotes an array value;
+\item a cartesian product from the domain of array indices to a
+  singleton set (with the unique value of all array elements); e.g.
+  \B{0..3 * \{RED, GREEN, BLUE\} --> \{ 0 \}}
+\item a set of maps, where each map has the tuple of array indices to
+  the left, and the corresponding array element to the right;
+\end{itemize}
+The first construction is taken care of by the rule \trad{}{Name}.
+
+For the second and third constructions, the code generator shall
+produce an array type and array expression in LLVM. The array type has
+two elements: the size and the type of the elements (which are array
+themselves in case of multi-dimensional arrays,
+see~\ref{sec:types:arrays}). For instance, the following type is a $2
+\times 3$ matrix of Booleans: \llvm{[ 2 x [ 3 x i1 ]]}.  Then an LLVM
+array expression is a comma-separated list enumerating each element of
+the array, by giving it its type and value. The list is delimited by
+square brackets, e.g. the $2 \times 3$  matrix of Booleans filled with
+the value \textit{FALSE\/} is:
+\llvm{[[3 x i1 ] [i1 0, i1 0, i1 0], [3 x i1 ] [i1 0, i1 0, i1 0]]}.
+
+The following rules specify the LLVM code generation for cartesian
+product. It essentially consists in recursing left-to-right over the
+sets composing the domain cartesian product. In the base case, the
+result is that of generating the code for the unique value in the
+image set.
+\begin{align*}
+\trad{n}{\B{Array}} =
+& \LET p_e, v_e, t_e \BE \trad{\fst\, n.img.elem}{\B{Expr}} \IN \\ 
+& \quad \LET v, t \BE \trad{n.dom, $v_e$, $t_e$}{\B{ArrayProduct}} \IN \\
+& \quad \quad p_e \sep v \sep t \\
+\trad{dom, $v_e$, $t_e$}{\B{ArrayProduct}} = 
+& \IF |\B{dom}| = 0 \THEN v_e \sep t_e \\
+& \ELSE \LET v, t \BE \trad{\rst\, dom, img}{\B{ArrayProduct}} \AND \\
+& \quad \quad c \BE \card(\fst\, \B{dom}) \\
+& \IN \underbrace{\llvm{"[\PH{t}\,\,\PH{v} $\cdots$ \PH{t}\,\,\PH{v}]"}}_{c \text{ times}}
+\sep \llvm{"[\PH{c} x \PH{t}]"}
+\end{align*}
+
+Handling sets of maps is trickier. Indeed, nothing guarantees that, in
+the B source, the elements of the set are presented in the same order
+as they are stored in the array. However, in the target LLVM code, one
+must produce the values in the order of their position. In the most
+general case, the terms denoting the array indices might be
+non-constant expressions, e.g. \B{\{i1 |-> v1, i2 |-> v2\}}, where
+\B{\{i1, i2\}} is the domain of the array. The current set of rules
+does not handle this situation and restricts that the index identifier
+in maps are scalar literals\footnote{Atelier-B's B0Check makes the same
+  restriction.}. 
+
+To handle such constructs, several auxiliary definitions are needed.
+First, function $indices$ takes as input two sequences of same
+lengths, one with B literals corresponding to indices, and one with B
+sets corresponding to the domain of those indices, and yields returns
+the sequence of positions of such indices in their respective sets:
+\begin{align*}
+indices(\B{il}, \B{dom}) =& \IF \B{il} = \langle \rangle \THEN \langle \rangle \\
+& \ELSE index(\fst\, \B{il}, \fst\,\B{dom}) \conc indices(\rst\, \B{il}, \rst\, \B{dom})
+\end{align*}
+
+Second, function $map$ takes as input a B map \B{n} and a sequence of
+B sets \B{dom} and returns the LLVM code $p$ to evaluate the
+expression to the right of the map, and a maplet from the sequence
+$il$ of integers corresponding to the positions of the indices of the
+map to the LLVM value $v$.
+\begin{align*}
+map(\B{n}, \B{dom}) =& 
+\LET p, v, t \BE \trad{n.arg2}{\B{Expr}} \AND il = indices(\B{n.arg1}, \B{dom}) \IN \\
+& \quad p \sep (il \mapsto v)
+\end{align*}
+
+Next, function $maps$ applies the former function to a sequence of
+maps, and collects and combine all the results to yield the LLVM code
+to evaluate all the expressions in the maps and a dictionary built by
+combining all the individual maplets.
+\begin{align*}
+maps(\B{n}, \B{dom}) =& \IF \B{n} = \langle \rangle \THEN \llvm{""} \sep \{\} \ELSE \\
+& \LET p_1, m = map(\fst\, \B{n}, \B{dom}) \AND
+p_2, d = maps(\rst\, \B{n}, \B{dom}) \\
+& \IN \llvm{"\PH{p_1} \PH{p_2}"} \sep (\{ m \} \cup d)
+\end{align*}
+
+The last auxiliary function, named $array$, recursively yields a LLVM
+array literal from a dictionary set $d$ of maplets, the sequence of
+sets \B{dom}, corresponding to the domain for the indices of the B
+array, the LLVM type $t$ for the array elements, and the path $p$ within
+the tree of array indices:
+\begin{align*}
+array(d, \B{dom}, t, p) =& 
+\LET n = \card(\fst\, \B{dom}) \IN \\
+&\quad
+\IF \card(\B{dom}) \THEN \\
+& \quad \quad
+\llvm{"[\PH{t} \PH{d(p \conc 1)}, ..., \PH{t} \PH{d(p \conc n)}]"} \\
+&\quad \ELSE \LET r = \rst\, \B{dom} \IN \\
+&\quad \quad \llvm{"[ \PH{ArrayType(r, t)} x \PH{n}} \\
+&\quad \quad \quad \llvm{\PH{array(d, r, t, p \conc 1)} ... \PH{array(d, r, t, p \conc n)} ]"}
+\end{align*}
+
+The results of these auxiliary functions are combined in the following
+rule that produces LLVM code from a B array literal expressed as a set
+of maps:
+\begin{align*}
+\trad{n}{\B{ArrayMapSet}} =& 
+\LET p, d \BE maps(\B{n.val}, \B{n.type.dom}) \AND
+t \BE \trad{n.type}{\B{ArrayType}}\\
+& \quad \IN \LET v = array(\B{n.type.dom}, \trad{n.type.ran}{\B{Type}}, d, \langle \rangle) \\
+& \quad \quad \IN p \sep v \sep t
 \end{align*}
 
 \subsubsection{Comparisons}
