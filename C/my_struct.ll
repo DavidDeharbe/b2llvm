@@ -23,3 +23,8 @@ define %struct.TSpoint @dx(%struct.TSpoint %p) {
   ret %struct.TSpoint %3
 }
 
+define i32 @f2(%struct.TSpoint %p) {
+  %1 = extractvalue %struct.TSpoint {i8 111, i32 0, i32 0}, 1
+  ret i32 %1
+}
+

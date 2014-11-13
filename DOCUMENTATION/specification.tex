@@ -1,4 +1,4 @@
-\documentclass{llncs}
+\documentclass{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -13,16 +13,17 @@
 \usepackage{array} 
 \usepackage[normalem]{ulem}
 \usepackage{cooltooltips}
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
 
-\pagestyle{headings}
+\pagestyle{myheadings}
+\markright{\today}
 
 \title{Translation of B Implementations to the LLVM: Specification}
-\author{David Déharbe}
-\institute{Federal University of Rio Grande do Norte\\
-Federal Institute of Education Science and Technology of Rio Grande do Norte\\
+\author{David Déharbe \\
+  Universidade Federal do Rio Grande do Norte -- UFRN\\
+Departamento de Inform\'{a}tica e Matem\'{a}tica Aplicada -- DIMAp\\
  Natal (Brazil)}
-
-\date{October 2014}
 \definecolor{bg}{rgb}{0.95,0.95,0.95}
 \newminted{llvm}{frame=single,firstnumber=1,linenos=true,fontsize=\scriptsize,bgcolor=bg}
 \newminted{pascal}{frame=single,firstnumber=1,linenos=true,fontsize=\scriptsize,bgcolor=bg}
@@ -82,6 +83,10 @@ Federal Institute of Education Science and Technology of Rio Grande do Norte\\
 
 \maketitle
 
+\pagebreak
+\tableofcontents
+
+\pagebreak
 \section{Description of the input of the code generator}
 \label{sec:b-ast}
 
@@ -122,7 +127,7 @@ they have an optional prefix identifying the module.
 Note that the translation presented in this paper only considers types \B{INT}
 (integer), \B{BOOL} (Boolean), enumerated set, arrays and structures. All elements and data types from B code are represented in abstract syntax tree. It is illustrated in Figure~\ref{tab:node-attr} and used as an intermediate representation of B code.
 
-\begin{figure}[H]
+\begin{figure}[ht]
   \begin{center}
     {\footnotesize
       \frame{
@@ -774,7 +779,7 @@ $$\opmap = \{
   \end{array}
 $$
 
-\subsubsection{Atomic expressions} 
+\subsection{Atomic expressions} 
 
 The encoding of atomic expressions has a simple definition. In the case of
 literals, one only needs to issue the corresponding LLVM literal:
@@ -802,7 +807,7 @@ state structure to pointer variable $p$ and then dereference $p$ to assign $v$:
 & \quad \llvm{\PH{v} = load \PH{t}* \PH{p}\nl"} \sep v \sep t
 \end{align*}
 
-\subsubsection{Records}
+\subsection{Records}
 
 Since both B and LLVM include structure types, the encoding is simple.
 A value of a B structure type is called a record, and it is directly
@@ -828,7 +833,7 @@ Such encoding is specified by the following rules:
 \trad{}{\B{Values}} & \isdef \llvm{""} \sep \llvm{""}
 \end{align*}
 
-\subsubsection{Record fields}
+\subsection{Record fields}
 
 In B, the access of a field in a record is performed by suffixing the
 record with the name of the field, e.g. \B{rec(flag: TRUE, balance:  10)'flag}.
@@ -842,13 +847,11 @@ corresponding value to a temporary variable (instruction \llvm{load}).
 \lefteqn{\trad{n}{\B{RecField}} \isdef \LET i = \text{position}(\B{n.id}, \B{n.base.type.fields}) \IN} \\
 & \LET t_f = \trad{\B{n.base.type.fields[$i$].type}}{\B{Type}} \AND
 p_r, v_r, t_r = \trad{\B{n.base}}{\B{Record}} \AND \\
-& \quad \quad  p_f \BE \variable \AND v_f \BE \variable \IN \\
-& \quad \llvm{"\PH{p_r}} \\
-& \quad \quad \llvm{\PH{p_f} = getelementptr \PH{t_r}* \PH{v_r}, i32 0, i32 \PH{i}} \\
-& \quad \quad \llvm{\PH{v_f} = load \PH{t_f}* \PH{p_f} \nl"} \sep v_f \sep t_f
+& \quad \quad  v_f \BE \variable \IN \\
+& \IN \llvm{"\PH{v_f} = extractvalue \PH{v_r}, \PH{i} \nl"} \sep v_f \sep t_f
 \end{align*}
 
-\subsubsection{Arrays}
+\subsection{Arrays}
 
 In B, full arrays may be evaluated and assigned. This is also the case
 for LLVM. The B notation offers three syntactic constructions to
@@ -964,7 +967,7 @@ t \BE \trad{n.type}{\B{ArrayType}}\\
 & \quad \quad \IN p \sep v \sep t
 \end{align*}
 
-\subsubsection{Comparisons}
+\subsection{Comparisons}
 
 Comparisons are formed by the application of a relational operator to
 two expressions. The code responsible for evaluating a comparison
@@ -982,7 +985,7 @@ the fresh variable $v$.
 & \llvm{"\PH{p_1}\quad\PH{p_2}\quad\PH{v} = icmp \PH{\opmap(\B{r.op})} \PH{t_1} \PH{v_1} \PH{v_2} \nl"} \sep v
 \end{align*}
 
-\subsubsection{Arithmetic operations} 
+\subsection{Arithmetic operations} 
 
 These have a similar structure and interpretation as comparisons. Here
 is the rule for binary arithmetic operations:
@@ -1004,7 +1007,7 @@ applications of binary applications. Next is the translation of the unary
   & \quad \quad \llvm{\PH{w} = add i32 1, \PH{v} \nl"} \sep w \sep \llvm{i32}
 \end{align*}
 
-\subsubsection{Predicates}
+\subsection{Predicates}
 
 The translation of conditions takes as input a condition node \B{n}, as well as
 two labels $\ell_t$ and $\ell_f$ that correspond to program locations where the
@@ -1030,7 +1033,7 @@ a ``short-cut'' when the evaluation of the first argument yields false:
 \end{align*}
 The definition of the translation for disjunctions is similar and is omitted.
 
-\subsubsection{$\lambda$-expressions}
+\subsection{$\lambda$-expressions}
 
 Atelier-B does not include $\lambda$-expressions in the implementable
 subset.  However, these are side-effect free expressions that are
@@ -1465,15 +1468,15 @@ $c$.
   \llvm{"\PH{\stateref(\B{c.mach})} \PH{\argname(\B{c})}"}
 \end{align*}
 
-\pagebreak
+%% \pagebreak
 
-\appendix
+%% \appendix
 
-[[[ BEGIN REDO THIS ]]]
+%% [[[ BEGIN REDO THIS ]]]
 
-\include{derivedTypes}
+%% \include{derivedTypes}
 
-[[[ END REDO THIS ]]]
+%% [[[ END REDO THIS ]]]
 
 
 \end{document}
