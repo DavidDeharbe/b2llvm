@@ -9,6 +9,9 @@
 # --- Python files
 *.pyc
 
+# --- LLVM files
+*.bc
+
 # --- Python coverage tool
 .coverage
 coverage_html
