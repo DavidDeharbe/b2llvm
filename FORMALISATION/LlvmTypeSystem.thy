@@ -1,6 +1,7 @@
 theory LlvmTypeSystem
 imports Main LlvmDataLayout
 begin
+section {* Data Layout *}
 
 datatype LlvmFloatingPointType =
   Half

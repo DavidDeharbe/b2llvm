@@ -20,7 +20,8 @@ define %struct.TSpoint @dx(%struct.TSpoint %p) {
   ; assignment of a structure to a structure
   store %struct.TSpoint %p, %struct.TSpoint* %2
   %3 = load %struct.TSpoint* %1
-  ret %struct.TSpoint %3
+  %4 = insertvalue %struct.TSpoint %3, i8 65, 0
+  ret %struct.TSpoint %4
 }
 
 define i32 @f2(%struct.TSpoint %p) {
