@@ -713,7 +713,10 @@ definition of a simple concrete set. Basically, a simple concrete set
 is such that its cardinality can be computed when code is generated.
 This is the case in the following situations: Boolean, integer
 intervals, enumerated sets. A B0 array is the Cartesian product of $n
-> 1$ simple concrete sets.
+> 1$ simple concrete sets. The last set of the Cartesian product is that
+of the values that may be stored in the array. All the remaining sets are
+that of the array indices. So B0 supports multi-dimensional arrays indexed
+by tuples.
 
 In the target LLVM language, an array array is defined with two
 elements: the size and the type of the elements. A LLVM array of
@@ -755,19 +758,23 @@ considered as implementable in Atelier-B.
 \section{Expressions}
 \label{sec:expr}
 
-To evaluate a composed expression using the LLVM, one must first generate a
-sequence of instructions to evaluate each argument, the resulting value being
-stored in a temporary variable, and second generate an instance of the LLVM
-instruction corresponding to the expression argument.  Translation of
-expressions is defined as functions that take as input some class of expressions
-and produce a triple of strings $p \sep v \sep t$, where $p$ is a possibly empty
+To evaluate a composed B0 expression in LLVM-IR, one must first
+generate a sequence of instructions to evaluate each argument, the
+resulting values being stored in temporary variables, and second
+generate an instance of the LLVM instruction corresponding to the
+expression argument.  Translation of expressions is defined as
+functions that take as input some class of expressions and produce a
+triple of strings $p \sep v \sep t$, where $p$ is a possibly empty
 sequence of instructions required in the evaluation (e.g.  for the
-sub-expressions), $v$ is the LLVM expression representing the resulting value,
-and $t$ represents the LLVM type of the expression. In the case of composed
-predicates, though, the evaluation is different as boolean operations need to be
-implemented with conditional and unconditional jumps.
+sub-expressions), $v$ is the LLVM expression representing the
+resulting value, and $t$ represents the LLVM type of the
+expression. 
 
-To facilitate the defintiion of rules that apply to similar cases, we introduce
+In the case of composed predicates, though, the evaluation is
+different: Boolean operations are implemented with conditional and
+unconditional jumps.
+
+To facilitate the definition of rules that apply to similar cases, we introduce
 mapping $\opmap$, that associates B operators to corresponding LLVM keywords:
 $$\opmap = \{
 \begin{array}[t]{l}
@@ -816,8 +823,8 @@ A value of a B structure type is called a record, and it is directly
 encoded in LLVM as a literal of a LLVM structure type. The only
 difference between the two languages is that the field references are
 names in B, and positions starting from 0 in LLVM. Note that, although
-fields are named in B structure, the order is relevant, for a given structure
-type, all values have fields in the same order.
+fields are named in a B structure, the order is relevant. For a given
+structure type, all values have fields in the same order.
 
 The encoding is done field-wise. For example, the record \B{rec(flag:
   TRUE, balance: 10)} of type \B{struct(flag: BOOL, balance: INT)} is
@@ -841,9 +848,8 @@ In B, the access of a field in a record is performed by suffixing the
 record with the name of the field, e.g. \B{rec(flag: TRUE, balance:  10)'flag}.
 
 In LLVM, a record is an aggregate value, and access is performed by
-getting the address, in the variable carrying the value, of the field
-of interest (instruction \llvm{getelementptr}), and then loading the
-corresponding value to a temporary variable (instruction \llvm{load}).
+applying instruction \llvm{accessvalue} to the full record value and
+the position of the field of interest:
 
 \begin{align*}
 \lefteqn{\trad{n}{\B{RecField}} \isdef \LET i = \text{position}(\B{n.id}, \B{n.base.type.fields}) \IN} \\
@@ -870,7 +876,7 @@ The first construction is taken care of by the rule \trad{}{Name}.
 
 For the second and third constructions, the code generator shall
 produce an array type and array expression in LLVM. The array type has
-two elements: the size and the type of the elements (which are array
+two elements: the size and the type of the elements (which are arrays
 themselves in case of multi-dimensional arrays,
 see~\ref{sec:types:arrays}). For instance, the following type is a $2
 \times 3$ matrix of Booleans: \llvm{[ 2 x [ 3 x i1 ]]}.  Then an LLVM
@@ -912,7 +918,7 @@ in maps are scalar literals\footnote{Atelier-B's B0Check makes the same
 To handle such constructs, several auxiliary definitions are needed.
 First, function $indices$ takes as input two sequences of same
 lengths, one with B literals corresponding to indices, and one with B
-sets corresponding to the domain of those indices, and yields returns
+sets corresponding to the domain of those indices, and returns
 the sequence of positions of such indices in their respective sets:
 \begin{align*}
 indices(\B{il}, \B{dom}) =& \IF \B{il} = \langle \rangle \THEN \langle \rangle \\
@@ -950,7 +956,7 @@ the tree of array indices:
 array(d, \B{dom}, t, p) =& 
 \LET n = \card(\fst\, \B{dom}) \IN \\
 &\quad
-\IF \card(\B{dom}) \THEN \\
+\IF \card \B{dom} = 1\THEN \\
 & \quad \quad
 \llvm{"[\PH{t} \PH{d(p \conc 1)}, ..., \PH{t} \PH{d(p \conc n)}]"} \\
 &\quad \ELSE \LET r = \rst\, \B{dom} \IN \\
@@ -1034,6 +1040,8 @@ a ``short-cut'' when the evaluation of the first argument yields false:
 \end{split}
 \end{align*}
 The definition of the translation for disjunctions is similar and is omitted.
+
+\subsection{Boolean operations}
 
 \subsection{$\lambda$-expressions}
 
