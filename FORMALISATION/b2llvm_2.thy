@@ -1,45 +1,10 @@
-header {* Generation of LLVM IR code from B implementations *}
-
-theory b2llvm
+theory b2llvm_2
 imports Main
 begin
 
-section {* Introduction *}
-
-text {* 
-A B module is a software component. It has data and operations that compose its behaviour. 
-The behavior specification is at a high level of abstraction, and uses first-order logic with
-set theory and integer arithmetics. The B methods provides means to derive a compliant
-implementation of this specification. Such B implementations are composed of so-called concrete
-data, and one imperative procedure that implements each possible operation. B has a specific
-language to define these implementations. 
-
-LLVM is a state-of-the-art compiler construction framework. LLVM includes an intermediate
-representation language (IR) and a virtual machine that abstract away the details of specific
-assembly languages and hardware. Typically a LLVM-based compiler for a language $L$
-consists of a front-end that produces LLVM IR code from $L$ programs, of optimization phases
-applied to this LLVM IR code, and a back-end that produces code for the target architecture from
-the optimized LLVM IR.
-
-The goal of this document is to formalize an LLVM front-end for B implementations, i.e. the 
-generation of LLVM IR code from B implementations.
-The formalization is divided into three parts:
-\begin{enumerate}
-\item formalization of the B implementation language;
-\item formalization of LLVM IR (more precisely of the elements of LLVM IR produced by
-the front-end);
-\item the code generation rules implemented in the LLVM front-end.
-\end{enumerate}
-
-This development is at an early stage, and only a subset of the full formalization has been
-performed.
-
-*}
-
-section {* Formalization of the implementation language of B. *}
+section {* Formalization of syntax and semantics of some B constructs. *}
 
 text {* This formalization only considers two kinds of data: integers and Booleans: *}
-
 datatype BType = BIntType | BBoolType
 
 text {* Accordingly to this simple type system, the possible values are defined as
@@ -86,7 +51,7 @@ text {* B has two distinct syntactic categories for expressions and predicates, 
 
 datatype 
   BExpr =
-    BTrue | BFalse | 
+    BTrue | BFalse | BPred BPredicate |
     BVar BVariable | BConst BValue | BSum BExpr BExpr
 and 
   BPredicate = 
@@ -97,6 +62,7 @@ fun BExprType :: "BExpr \<Rightarrow> BContext \<Rightarrow> BType option" and
     WF_BPredicate :: "BPredicate \<Rightarrow> BContext \<Rightarrow> bool" where
   "BExprType BTrue _ = Some BBoolType" |               
   "BExprType BFalse _ = Some BBoolType" |                                     
+  "BExprType (BPred p) \<gamma> = (if (WF_BPredicate p \<gamma>) then Some BBoolType else None)" |
   "BExprType (BVar v) \<gamma> = (if v \<in> \<alpha> \<gamma> then Some (\<tau> \<gamma> v) else None)" |                                 
   "BExprType (BConst k) _ = Some (BValueType k)" |
   "BExprType (BSum e1 e2) \<gamma> = 
@@ -132,6 +98,7 @@ primrec BEvalPredicate :: "BPredicate \<Rightarrow> BState \<Rightarrow> bool op
 
   "BEvalExpr BTrue s = Some (BBool True)" |       
   "BEvalExpr BFalse s = Some (BBool False)" |
+  "BEvalExpr (BPred p) s = (case (BEvalPredicate p s) of Some b \<Rightarrow> Some(BBool b) | _ \<Rightarrow> None)" |
   "BEvalExpr (BVar v) s = Some ((\<V> s) v)" |
   "BEvalExpr (BConst v) s = Some v" |
   "BEvalExpr (BSum e1 e2) s = 
@@ -145,7 +112,7 @@ for predicates. *}
 
 lemma B_eval_wf_expr: 
 assumes
-  "WF_BState \<sigma>"
+  "QF_BState \<sigma>"
   "WF_BExpr e (\<Gamma> \<sigma>)"
 shows
   "\<exists> v . BEvalExpr e \<sigma> = Some v"
@@ -153,10 +120,10 @@ sorry
 
 lemma B_eval_wf_pred: 
 assumes
-  "WF_BState \<sigma>"
-  "WF_BPredicate p (\<Gamma> \<sigma>)"
+  "QF_BState \<sigma>"
+  "WF_BPred p (\<Gamma> \<sigma>)"
 shows
-  "\<exists> b . BEvalPredicate p \<sigma> = Some b"
+  "\<exists> b . BEvalPred p \<sigma> = Some b"
 sorry
  
 text {* A type for B instructions. Needs to be extended to match the actual language. *}
@@ -203,38 +170,28 @@ shows
   "\<exists> \<sigma>' . BEvalInst e \<sigma> = Some \<sigma>'"
 sorry
                                         
-text {* This completes the skeleton of a formal semantics of the B implementation language. *}
-
-section {* Formalization of LLVM IR *}
-
-text {* We now turn our attention to LLVM. LLVM programs operate on a virtual machine. The
-virtual machine has a memory where global variables, parameters, local variables are stored.
-The following two types respectively  represent memory addresses and temporary variables.
-Temporary variables can be viewed as registers, and the LLVM IR has an unlimited supply of
-them. *}
+text {* This completes the skeleton of a formal semantics of the B implementation language. 
+We next turn our attention to LLVM. First two types are introduced: they respectively 
+represent memory addresses and temporary variables.*}
 
 type_synonym LAddr = nat
 type_synonym LTemp = nat
 
-text {* Again, we consider that values can only be integer and Boolean values. *}
-
+text {* Again, we consider that values can only be integer and Boolean values. Again this is a 
+simplification so that we can initially focus on other aspects of the formalization of LLVM code
+generation from B. *}
 datatype LValue = LInt int | LBool bool   
 
-text {* The memory is formalized as a function from addresses to values. *}
-
-type_synonym LMemory = "LAddr \<Rightarrow> LValue"
-
-text {* Expressions appearing in LLVM IR instructions are very simple: they can only be constants or 
-temporaries. They are formalized as follows: *}
+text {* Expressions in LLVM can only be constants or temporaries. They are formalized as
+follows: *}
 
 datatype LExpr = Val LValue |  Var LTemp
 
-text {* Labels are used to tag instructions and for branching. *}
-type_synonym LLabel = LTemp
+type_synonym LLabel = string
 
-text {* Next, (a few) LLVM statements are formalized in the following type. The typing 
-annotation found in the concrete syntax of LLVM is currently omitted (note that, in the current
-stage, the formalization avoids considering typing issues anyway). *}
+text {* Next, (a few) LLVM statements are formalized in the following type. Note that the typing 
+annotation found in the concrete syntax of LLVM is omitted (the formalization currently avoids 
+considering typing issues anyway). *}
 
 datatype LStm =
   Load LTemp LAddr |         -- "Loads contents from address to temporary"                      
@@ -242,32 +199,20 @@ datatype LStm =
   Add LTemp LExpr LExpr |    -- "Adds two values to temporary"
   ICmpEq LTemp LExpr LExpr | -- "Compares to values and stores result into temporary"
   BrU LLabel |               -- "Unconditional branch" 
-  BrC LExpr LLabel LLabel |  -- "Conditional branch"
-  Label LLabel               -- "Label"
+  Ret
   
-text {* A unit of code is a sequence of statements. It also contains an auxiliary
-function to map labels to positions in the sequence. *}
+text  {* Semantics *}
 
-record LCode =
-  prog :: "LStm list"         -- "a sequence of instructions forming a program unit"
-  blocks :: "LLabel \<Rightarrow> nat"   -- "position of each block label in the sequence"  
-
-text  {* Follows an attempt to define the semantics of LLVM units of code. However it
-is not the right approach, as the function defining the semantics cannot be shown to
-be total. 
-
-First, the following function specifies how expressions are evaluated:
-*}
+type_synonym LMemory = "LAddr \<Rightarrow> LValue"
 
 primrec LEvalExpr :: "LExpr \<Rightarrow> LMemory \<Rightarrow> LValue" where
   "LEvalExpr (Val v) s = v" |
   "LEvalExpr (Var v) s = s v"
 
-text {* 
-The state of the program execution is a record with three elements: the program
-counter, that points to a position in a sequence of statements; the current state
-of the global memory; and a valuation for the local temporaries.
-*}
+record LCode =
+  prog :: "LStm list"         -- "a sequence of instructions forming a program unit"
+  blocks :: "LLabel \<Rightarrow> nat"   -- "position of each block label in the sequence"  
+
 record LState =
   pc :: nat                   -- "program counter"
   mem :: "LMemory"            -- "global store"
@@ -300,17 +245,8 @@ fun LStep :: "LCode \<Rightarrow> LState \<Rightarrow> LState option" where
          (if (\<not> b label < length \<Pi>) then 
            None 
          else 
-           Some \<lparr> pc = b label, mem = M, local = L \<rparr> ) |
-         BrC test label_true label_false \<Rightarrow>
-         (let label = 
-           (case (LEvalExpr test M) of LBool True \<Rightarrow> label_true | LBool False \<Rightarrow> label_false)
-          in
-           (if (\<not> b label < length \<Pi>) then None else Some \<lparr> pc = b label, mem = M, local = L \<rparr>)) |
-        Label label \<Rightarrow>
-          Some \<lparr> pc = i+1, mem = M, local = L \<rparr>))"
+           Some \<lparr> pc = b label, mem = M, local = L \<rparr> )))"
 
-text {* The next function specifies how a unit of code executes. However this approach
-cannot be employed as we cannot show it is total. *}
 fun LRun :: "LCode \<Rightarrow> LState \<Rightarrow> LState option" where      
   "LRun c st =
     (if pc st = length (prog c) then 
@@ -319,9 +255,7 @@ fun LRun :: "LCode \<Rightarrow> LState \<Rightarrow> LState option" where
        (case LStep c st of 
          None \<Rightarrow> None | 
          Some st' \<Rightarrow> LRun c st'))"
-
-section {* Code generation rules *}
-
+  
 text {* The third part of the formalization deals with the generation of LLVM code from B
 expressions and instructions. All functions take as
 \begin{itemize}
@@ -330,14 +264,15 @@ expressions and instructions. All functions take as
 \item the next LLVM temporary name to be used (each temporary may be assigned exactly once).
 \end{itemize}
                               
-The first function formalizes the code generation for expressions (it is not correct for
-conjunctions and negations):
+The first function formalizes the code generation for expressions:
  *}                    
 
-fun b2llvm_expr :: "BExpr \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
+fun b2llvm_expr :: "BExpr \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)" and
+  b2llvm_pred :: "BPredicate \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
 where
   "b2llvm_expr BTrue loc tmp = ([], Val(LBool True), tmp)" |
   "b2llvm_expr BFalse loc tmp = ([], Val(LBool False), tmp)" |    
+  "b2llvm_expr (BPred p) loc tmp = b2llvm_pred p loc tmp" |
   "b2llvm_expr (BVar v) loc tmp = ( [ Load tmp (loc v) ], Var tmp, tmp+1)" |    
   "b2llvm_expr (BConst (BInt i)) loc tmp = ([], Val (LInt i), tmp)" |
   "b2llvm_expr (BConst (BBool b)) loc tmp = ([], Val (LBool b), tmp)" |
@@ -345,31 +280,21 @@ where
     (case (b2llvm_expr e1 loc tmp) of
       (p1, v1, tmp1) \<Rightarrow>
         (case (b2llvm_expr e2 loc tmp1) of
-          (p2, v2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 v1 v2 ], Var tmp2, tmp2+1)))"
+          (p2, v2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 v1 v2 ], Var tmp2, tmp2+1)))" |      
 
-fun b2llvm_pred :: "BPredicate \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LLabel \<Rightarrow> LLabel \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
-where
-  "b2llvm_pred (BEq e1 e2) label_true label_false loc tmp =
+  "b2llvm_pred (BEq e1 e2) loc tmp =
     (case (b2llvm_expr e1 loc tmp) of
       (il1, v1, tmp1) \<Rightarrow>
         (case (b2llvm_expr e2 loc tmp1) of
-          (il2, v2, tmp2) \<Rightarrow> 
-            ( il1 @ il2 @ 
-              [ ICmpEq tmp2 v1 v2 ,
-                BrC tmp2 label_true label_false], 
-              Var tmp2, tmp2+1)))" |      
-  "b2llvm_pred (BConj p1 p2) loc label_true label_false tmp =                        
-    (case (b2llvm_pred p1 loc tmp label_false ) of
+          (il2, v2, tmp2) \<Rightarrow> ( il1 @ il2 @ [ ICmpEq tmp2 v1 v2 ], Var tmp2, tmp2+1)))" |      
+  "b2llvm_pred (BConj p1 p2) loc tmp =                        
+    (case (b2llvm_pred p1 loc tmp) of
       (il1, v1, tmp1) \<Rightarrow>
-        (case (b2llvm_pred p2 loc label_true label_false (tmp1 + 1)) of
-          (il2, v2, tmp2) \<Rightarrow> 
-            (il1 @ 
-             [ BrC v1 tmp1 label_false, Label tmp ] @ 
-             il2, 
-             Var tmp2, tmp2)))" |
-  "b2llvm_pred (BNeg p) loc label_true label_false tmp =                          
-    (case (b2llvm_pred p loc label_false label_true tmp) of
-      (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"
+        (case (b2llvm_pred p2 loc tmp1) of
+          (il2, v2, tmp2) \<Rightarrow> (il1 @ il2, Var tmp2, tmp2+1)))" |           -- "TODO"             
+  "b2llvm_pred (BNeg p) loc tmp =                          
+    (case (b2llvm_pred p loc tmp) of
+      (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"                          -- "TODO"
 
 text {* Next, the following function formalizes the translation for B instructions. *}
 

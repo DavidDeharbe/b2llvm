@@ -1,6 +1,6 @@
 header {* Generation of LLVM IR code from B implementations *}
 
-theory b2llvm
+theory b2llvm_3
 imports Main
 begin
 
