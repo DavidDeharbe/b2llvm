@@ -22,8 +22,9 @@ fun BValueType :: "BValue \<Rightarrow> BType" where
 
 text {* A B component has a set of variables, and the valuations of such variables 
 form the possible states of that component. The following introduces a type for
-variables. Although it is defined as the \textit{string} type, it could be any
-type inhabited by a countable number of values. *}
+variables. Although it is defined as the \textit{nat} type, it could be any
+type inhabited by a countable number of values. Using @{term nat} makes it more convenient
+                   to write \verb'value' Isabelle commands to evaluate terms. *}
 
 type_synonym BVariable = nat
 
@@ -154,41 +155,73 @@ where
     (case (b2llvm_pred p loc label_false label_true tmp) of
       (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"
 
-text {* Next, the following function formalizes the translation for B instructions. *}
+text {* Next, the following function formalizes the translation for B instructions. The
+parameters are:
+\begin{itemize}
+\item A B instruction, of type @{type BInst};
+\item @{term layout} is the layout of the representation of B variables in the LLVM memory, it is a function
+from B variables to LLVM addresses;
+\item @{term exit} is the label of the block of LLVM instructions that must be executed following the execution
+of the code produced for the current B instruction;
+\item @{term counter} is the next free identifier that can be used to create a new temporary.
+\end{itemize}
+*}
 
-fun b2llvm_stm :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" where
-  "b2llvm_stm (Asg v e) loc temp =
-    (case (b2llvm_expr e loc temp) of
-      (sl, e', t') \<Rightarrow> (sl @ [ (Store e' (loc v)) ], t'))" |
-  "b2llvm_stm (Blk []) loc temp = ( [], temp )" |
-  "b2llvm_stm (Blk (x # xs)) loc temp =
-    (case (b2llvm_stm x loc temp) of
-      (sl, t') \<Rightarrow> (case (b2llvm_stm (Blk xs) loc temp) of
-                    (sl', t'') \<Rightarrow> (sl @ sl', t'')))" |
-  "b2llvm_stm (If c i1 i2) loc temp =
-    (let (bk_then, bk_else, bk_end) = (temp, temp + 1, temp + 2) in
-      (let (ilc, e1, tmp1) = b2llvm_pred c loc bk_then bk_else (bk_end + 1) in
-        (let (ilt, tmp2) = b2llvm_stm i1 loc tmp1 in
-          (let (ile, tmp3) = b2llvm_stm i2 loc tmp2 in
+fun b2llvm_stm :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
+where
+  "b2llvm_stm Skip layout counter = 
+    ([], counter)" |
+  "b2llvm_stm (Asg v e) layout counter =
+    (let (sl, e', counter') = (b2llvm_expr e layout counter) in
+       (sl @ [ Store e' (layout v) ], counter'))" |
+  "b2llvm_stm i layout counter = ([], counter)"
+
+fun b2llvm_stm_label :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
+where
+  "b2llvm_stm_label Skip layout exit counter = 
+    (let (sl, counter') = b2llvm_stm Skip layout counter in
+      (sl @ [BrU exit], counter'))" |
+  "b2llvm_stm_label (Asg v e) layout exit counter = 
+    (let (sl, counter') = b2llvm_stm (Asg v e) layout counter in
+      (sl @ [BrU exit], counter'))" |
+  "b2llvm_stm_label (Blk []) layout exit counter = 
+    ( [BrU exit], counter )" |
+  "b2llvm_stm_label (Blk (x # xs)) layout exit counter =
+    (let (sl, counter') = 
+       (case x of
+         (If _ _ _) \<Rightarrow> 
+           (let (sli, tempi) = b2llvm_stm_label x layout counter (counter + 1) in
+             (sli @ [ Label counter ], counter + 1)) |
+          _ \<Rightarrow> 
+            b2llvm_stm x layout counter) 
+     in    
+       (let (sl', counter'') = b2llvm_stm_label (Blk xs) layout exit counter' in
+          (sl @ sl', counter'')))" |
+  "b2llvm_stm_label (If c i1 i2) varmap exit counter =
+    (let (bk_then, bk_else) = (counter, counter + 1) in
+      (let (ilc, e1, tmp1) = b2llvm_pred c varmap bk_then bk_else (counter + 2) in
+        (let (ilt, tmp2) = b2llvm_stm_label i1 varmap exit tmp1 in
+          (let (ile, tmp3) = b2llvm_stm_label i2 varmap exit tmp2 in
             (ilc @
-            [BrC e1 bk_then bk_else] @
             [Label bk_then] @
             ilt @
-            [BrU bk_end] @
             [Label bk_else] @
-            ile @
-            [BrU bk_end] @
-            [Label bk_end],
-            tmp3)))))" |
-  "b2llvm_stm Skip loc temp = ([], temp)"
+            ile,
+            tmp3)))))"
 
 value "let (v0, v1, v2) = (0, 1, 2) in 
-          b2llvm_stm Skip (\<lambda> x . x) 0"
-value "(let (v0, v1, v2) = (0, 1, 2) in 
-          (b2llvm_stm (Asg 0 (BConst (BInt 0))) (\<lambda> x . x) 0))"
-value "(let (v0, v1, v2) = (0, 1, 2) in 
-          (b2llvm_stm (If (BEq (BVar 0) (BConst (BInt 0))) (Asg 0 (BConst (BInt 1))) Skip) (\<lambda> x . x) 0))"
+          b2llvm_stm_label Skip (\<lambda> x . x) -1 0"
 
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_stm_label (Asg 0 (BConst (BInt 0))) (\<lambda> x . x) -1 0))"
+
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_stm_label (If (BEq (BVar 0) (BConst (BInt 0))) (Asg 0 (BConst (BInt 1))) Skip) (\<lambda> x . x) -1 0))"
+
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_stm_label (Blk [Asg 0 (BConst (BInt 0)), Asg 0 (BConst (BInt 0))]) (\<lambda> x . x) -1 0))"
+
+          
 section {* Semantics *}
 
 text {* The following paragraphs are in draft-state, at best. *}
