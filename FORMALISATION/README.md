@@ -11,11 +11,8 @@ steps are the following:
 | Constructions| supported        |
 |--------------|------------------|
 | Type system  | integers         |
-| Expressions  | integer literals |
-|              | variables        |
-|              | sum              |
-| Instructions | assignment       |
-|              | block            |
+| Expression  | integer literals, variables, sum              |
+| Instruction | assignment, block            |
 
 Specification of LLVM does not include typing annotations.
 
@@ -23,17 +20,10 @@ Specification of LLVM does not include typing annotations.
 
 | Constructions| supported        |
 |--------------|------------------|
-| Type system  | integers           |
-|      	       | +Booleans	        |
-| Expressions  | integer literals   |
-|              | + Boolean literals |
-|              | variables          |
-|              | sum                |
-| Predicates   | + equalities       |
-|              | + conjunctions     |
-|              | + negations        |
-| Instructions | assignment         |
-|              | block              |
+| Type system  | integers, *Booleans*	        |
+| Expression  | integer literals, *Boolean literals*, variables, sum          |
+| *Predicate* | *equalities*, *conjunctions*, *negations*        |
+| Instruction | assignment, block              |
 
 Specification of LLVM does not include typing annotations.
 
@@ -41,21 +31,10 @@ Specification of LLVM does not include typing annotations.
 
 | Constructions| supported        |
 |--------------|------------------|
-| Type system  | integers         |
-|      	       | Booleans	      |
-|--------------|------------------|
-| Expressions  | integer literals |
-|              | Boolean literals |
-|              | variables        |
-|              | sum              |
-|--------------|------------------|
-| Predicates   | equalities       |
-|              | conjunctions     |
-|              | negations        |
-|--------------|------------------|
-| Instructions | assignment       |
-|              | block            |
-|--------------|------------------|
+| Type system  | integers, Booleans	      |
+| Expression  | integer literals, Boolean literals, variables, sum              |
+| Predicate   | equality, conjunction, negations        |
+| Instruction | assignment, block            |
 
-+ Specification of LLVM does include typing annotations.
+*Specification of LLVM does include typing annotations*.
 
