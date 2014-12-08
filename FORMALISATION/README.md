@@ -8,40 +8,39 @@ steps are the following:
 
 - Step 1:
 
-| Type system  | integers         |
+| Constructions| supported        |
 |--------------|------------------|
+| Type system  | integers         |
 | Expressions  | integer literals |
 |              | variables        |
 |              | sum              |
-|--------------|------------------|
 | Instructions | assignment       |
 |              | block            |
-|--------------|------------------|
 
 Specification of LLVM does not include typing annotations.
 
 - Step 2:
 
+| Constructions| supported        |
+|--------------|------------------|
 | Type system  | integers           |
 |      	       | +Booleans	        |
-|--------------|--------------------|
 | Expressions  | integer literals   |
 |              | + Boolean literals |
 |              | variables          |
 |              | sum                |
-|--------------|--------------------|
 | Predicates   | + equalities       |
 |              | + conjunctions     |
 |              | + negations        |
-|--------------|--------------------|
 | Instructions | assignment         |
 |              | block              |
-|--------------|--------------------|
 
 Specification of LLVM does not include typing annotations.
 
 - Step 3:
 
+| Constructions| supported        |
+|--------------|------------------|
 | Type system  | integers         |
 |      	       | Booleans	      |
 |--------------|------------------|
