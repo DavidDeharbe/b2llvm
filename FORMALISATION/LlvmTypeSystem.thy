@@ -24,7 +24,7 @@ datatype LlvmType =
 | Opaque
 | Pointer "LlvmType  * (nat option)" -- "type of data pointed, optionally address space"
 | Vector "nat * LlvmType" -- "size and type of elements"
-  
+
 fun IsPrimitiveType :: "LlvmType \<Rightarrow> bool" where
   "IsPrimitiveType (Integer x) = True"
 | "IsPrimitiveType (FloatingPoint x) = True"

@@ -2,7 +2,9 @@ theory b2llvm_2
 imports Main
 begin
 
-section {* Formalization of syntax and semantics of some B constructs. *}
+section {* Syntax *}
+
+subsection {* Formalization of syntax of some B constructs. *}
 
 text {* This formalization only considers two kinds of data: integers and Booleans: *}
 datatype BType = BIntType | BBoolType
@@ -23,13 +25,191 @@ form the possible states of that component. The following introduces a type for
 variables. Although it is defined as the \textit{string} type, it could be any
 type inhabited by a countable number of values. *}
 
-type_synonym BVariable = string
+type_synonym BVariable = nat
 
-text {* Definition of a (record) type for the state of the B component. The state is specified by
-a valuation of some variables, that we call the alphabet of the state. *}
+text {* Definition of a (record) type for the typing context in which some B constructs are
+  written. *}
+  
 record BContext =
   \<alpha> :: "BVariable set"       -- "alphabet for the state"         
   \<tau> :: "BVariable \<Rightarrow> BType" -- "type for each variable"       
+
+text {* B has two distinct syntactic categories for expressions and predicates, i.e. one
+  must distinguish between Boolean expressions (that can be assigned to variables) and
+  predicates (used for control flow and assertions). It is possible to convert a
+  predicate to a Boolean expression (with the \verb'bool' operator), and vice-versa 
+  (by comparing the expression to \verb'TRUE').
+ 
+  The following types correspond to B expressions and predicates, respectively. *}
+
+datatype 
+  BExpr =
+    BTrue | BFalse |
+    BVar BVariable | BConst BValue | BSum BExpr BExpr
+and 
+  BPredicate = 
+    BEq BExpr BExpr | 
+    BConj BPredicate BPredicate | BNeg BPredicate
+
+text {* A B expression has a type. Predicates are always Boolean valued. The following function formalizes this relation: *}
+fun BExprType :: "BExpr \<Rightarrow> BContext \<Rightarrow> BType option" where
+  "BExprType BTrue _ = Some BBoolType" |               
+  "BExprType BFalse _ = Some BBoolType" |                                     
+  "BExprType (BVar v) \<gamma> = (if v \<in> \<alpha> \<gamma> then Some (\<tau> \<gamma> v) else None)" |                                 
+  "BExprType (BConst k) _ = Some (BValueType k)" |
+  "BExprType (BSum e1 e2) \<gamma> = 
+    (case (BExprType e1 \<gamma>, BExprType e2 \<gamma>) of
+       (Some BIntType, Some BIntType) \<Rightarrow> Some BIntType | _ => None)"
+
+text {* A type for B instructions. Needs to be extended to match the actual language. *}
+datatype BInst =
+  Asg BVariable BExpr |      
+  Blk "BInst list" |
+  If BPredicate BInst BInst |
+  Skip
+
+subsection {* Syntax of the target LLVM language. *}
+
+text {* We next turn our attention to LLVM. First two types are introduced: they respectively 
+represent memory addresses and temporary variables.*}
+
+type_synonym LAddr = nat
+type_synonym LTemp = int
+
+text {* Values can only be integer and Boolean values.  *}
+datatype LValue = LInt int | LBool bool   
+
+text {* Expressions in LLVM can only be constants or temporaries. They are formalized as
+follows: *}
+
+datatype LExpr = Val LValue |  Var LTemp
+
+text {* Next, (a few) LLVM statements are formalized in the following type. Note that the typing 
+annotation found in the concrete syntax of LLVM is omitted (the formalization currently avoids 
+considering typing issues anyway). *}
+
+datatype LStm =
+  Load LTemp LAddr |         -- "Loads contents from address to temporary"                      
+  Store LExpr LAddr |        -- "Store temporary value at address"
+  Add LTemp LExpr LExpr |    -- "Adds two values to temporary"
+  ICmpEq LTemp LExpr LExpr | -- "Compares to values and stores result into temporary"
+  BrU LTemp |                -- "Unconditional branch" 
+  BrC LExpr LTemp LTemp |    -- "Conditional branch"
+  Label LTemp
+
+section {* Formalization of the code generation rules*}
+
+text {* The functions formalizing the generation of LLVM code from B
+expressions and instructions take as parameters:
+\begin{itemize}
+\item an element of B language to B translated;
+\item a function mapping B variables to LLVM memory addresses;
+\item the next LLVM temporary name to be used (each temporary may be assigned exactly once).
+\end{itemize}
+                              
+The first function formalizes the code generation for expressions:
+ *}                    
+
+fun b2llvm_expr :: "BExpr \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
+where
+  "b2llvm_expr BTrue loc tmp = ([], Val(LBool True), tmp)" |
+  "b2llvm_expr BFalse loc tmp = ([], Val(LBool False), tmp)" |    
+  "b2llvm_expr (BVar v) loc tmp = ( [ Load tmp (loc v) ], Var tmp, tmp+1)" |    
+  "b2llvm_expr (BConst (BInt i)) loc tmp = ([], Val (LInt i), tmp)" |
+  "b2llvm_expr (BConst (BBool b)) loc tmp = ([], Val (LBool b), tmp)" |
+  "b2llvm_expr (BSum e1 e2) loc tmp = 
+    (case (b2llvm_expr e1 loc tmp) of
+      (p1, v1, tmp1) \<Rightarrow>
+        (case (b2llvm_expr e2 loc tmp1) of
+          (p2, v2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 v1 v2 ], Var tmp2, tmp2+1)))"
+
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_expr (BConst (BInt 0)) (\<lambda> x . x) 0))"
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_expr (BSum (BSum (BConst (BInt 1)) (BConst (BInt 2))) (BConst (BInt 3))) (\<lambda> x . x) 0))"
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_expr (BSum (BSum (BVar 0) (BConst (BInt 1))) (BVar 1)) (\<lambda> x . x) 0))"
+          
+fun b2llvm_pred :: "BPredicate \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
+where
+  "b2llvm_pred (BEq e1 e2) loc label_true label_false tmp =
+    (case (b2llvm_expr e1 loc tmp) of
+      (il1, v1, tmp1) \<Rightarrow>
+        (case (b2llvm_expr e2 loc tmp1) of
+          (il2, v2, tmp2) \<Rightarrow> 
+            ( il1 @ il2 @ 
+              [ ICmpEq tmp2 v1 v2 ,
+                BrC (Var tmp2) label_true label_false], 
+              Var tmp2, tmp2+1)))" |      
+  "b2llvm_pred (BConj p1 p2) loc label_true label_false tmp =                        
+    (case (b2llvm_pred p1 loc tmp label_false (tmp + 1)) of
+      (il1, v1, tmp1) \<Rightarrow>
+        (case (b2llvm_pred p2 loc label_true label_false (tmp1 + 1)) of
+          (il2, v2, tmp2) \<Rightarrow> 
+            (il1 @ 
+             [ BrC v1 tmp1 label_false, Label tmp ] @ 
+             il2, 
+             Var tmp2, tmp2)))" |
+  "b2llvm_pred (BNeg p) loc label_true label_false tmp =                          
+    (case (b2llvm_pred p loc label_false label_true tmp) of
+      (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"
+
+text {* Next, the following function formalizes the translation for B instructions. *}
+
+fun b2llvm_stm :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" where
+  "b2llvm_stm (Asg v e) loc temp =
+    (case (b2llvm_expr e loc temp) of
+      (sl, e', t') \<Rightarrow> (sl @ [ (Store e' (loc v)) ], t'))" |
+  "b2llvm_stm (Blk []) loc temp = ( [], temp )" |
+  "b2llvm_stm (Blk (x # xs)) loc temp =
+    (case (b2llvm_stm x loc temp) of
+      (sl, t') \<Rightarrow> (case (b2llvm_stm (Blk xs) loc temp) of
+                    (sl', t'') \<Rightarrow> (sl @ sl', t'')))" |
+  "b2llvm_stm (If c i1 i2) loc temp =
+    (let (bk_then, bk_else, bk_end) = (temp, temp + 1, temp + 2) in
+      (let (ilc, e1, tmp1) = b2llvm_pred c loc bk_then bk_else (bk_end + 1) in
+        (let (ilt, tmp2) = b2llvm_stm i1 loc tmp1 in
+          (let (ile, tmp3) = b2llvm_stm i2 loc tmp2 in
+            (ilc @
+            [BrC e1 bk_then bk_else] @
+            [Label bk_then] @
+            ilt @
+            [BrU bk_end] @
+            [Label bk_else] @
+            ile @
+            [BrU bk_end] @
+            [Label bk_end],
+            tmp3)))))" |
+  "b2llvm_stm Skip loc temp = ([], temp)"
+
+value "let (v0, v1, v2) = (0, 1, 2) in 
+          b2llvm_stm Skip (\<lambda> x . x) 0"
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_stm (Asg 0 (BConst (BInt 0))) (\<lambda> x . x) 0))"
+value "(let (v0, v1, v2) = (0, 1, 2) in 
+          (b2llvm_stm (If (BEq (BVar 0) (BConst (BInt 0))) (Asg 0 (BConst (BInt 1))) Skip) (\<lambda> x . x) 0))"
+
+section {* Semantics *}
+
+text {* The following paragraphs are in draft-state, at best. *}
+
+subsection {* Semantics for source B constructions *}
+
+text {* We define a B expression as well-formed when we can derive its type in a context. *}
+definition WF_BExpr :: "BExpr \<Rightarrow> BContext \<Rightarrow> bool" where
+  "WF_BExpr e \<gamma> \<equiv> (case (BExprType e \<gamma>) of Some _ \<Rightarrow> True | None \<Rightarrow> False)"
+
+text {* A predicate is well-formed when there is a derivation from the context that its type
+  is Boolean. *}
+fun WF_BPredicate :: "BPredicate \<Rightarrow> BContext \<Rightarrow> bool" where
+  "WF_BPredicate (BEq e1 e2) \<gamma> =                                  
+    (case (BExprType e1 \<gamma>, BExprType e2 \<gamma>) of (Some t1, Some t2) \<Rightarrow> t1 = t2 | _ => False)" |
+  "WF_BPredicate (BConj p1 p2) \<gamma> = (WF_BPredicate p1 \<gamma> \<and> WF_BPredicate p2 \<gamma>)" |
+  "WF_BPredicate (BNeg p) \<gamma> = WF_BPredicate p \<gamma>"
+
+
+text {* Definition of a (record) type for the state of the B component. The state is specified by
+a valuation of some variables. *}
 
 record BState =
   \<Gamma> :: BContext
@@ -41,44 +221,22 @@ to its typing information. *}
 definition WF_BState :: "BState \<Rightarrow> bool" where
   "WF_BState s \<equiv> \<forall> v . (v \<in> \<alpha> (\<Gamma> s) \<longrightarrow> \<tau> (\<Gamma> s) v = BValueType (\<V> s v))"
       
-text {* B has two distinct syntactic categories for expressions and predicates, i.e. one
-  must distinguish between Boolean expressions (that can be assigned to variables) and
-  predicates (used for control flow and assertions). It is possible to convert a
-  predicate to a Boolean expression (with the \verb'bool' operator), and vice-versa 
-  (by comparing the expression to \verb'TRUE').
- 
-  The following types correspond to B expressions and predicates, respectively. *}
-
-datatype 
-  BExpr =
-    BTrue | BFalse | BPred BPredicate |
-    BVar BVariable | BConst BValue | BSum BExpr BExpr
-and 
-  BPredicate = 
-    BEq BExpr BExpr | 
-    BConj BPredicate BPredicate | BNeg BPredicate
-                                                                   
-fun BExprType :: "BExpr \<Rightarrow> BContext \<Rightarrow> BType option" and
-    WF_BPredicate :: "BPredicate \<Rightarrow> BContext \<Rightarrow> bool" where
-  "BExprType BTrue _ = Some BBoolType" |               
-  "BExprType BFalse _ = Some BBoolType" |                                     
-  "BExprType (BPred p) \<gamma> = (if (WF_BPredicate p \<gamma>) then Some BBoolType else None)" |
-  "BExprType (BVar v) \<gamma> = (if v \<in> \<alpha> \<gamma> then Some (\<tau> \<gamma> v) else None)" |                                 
-  "BExprType (BConst k) _ = Some (BValueType k)" |
-  "BExprType (BSum e1 e2) \<gamma> = 
-    (case (BExprType e1 \<gamma>, BExprType e2 \<gamma>) of
-       (Some BIntType, Some BIntType) \<Rightarrow> Some BIntType | _ => None)" |
-
-  "WF_BPredicate (BEq e1 e2) \<gamma> =                                  
-    (case (BExprType e1 \<gamma>, BExprType e2 \<gamma>) of (Some t1, Some t2) \<Rightarrow> t1 = t2 | _ => False)" |
-  "WF_BPredicate (BConj p1 p2) \<gamma> = (WF_BPredicate p1 \<gamma> \<and> WF_BPredicate p2 \<gamma>)" |
-  "WF_BPredicate (BNeg p) \<gamma> = WF_BPredicate p \<gamma>"
-
-definition WF_BExpr :: "BExpr \<Rightarrow> BContext \<Rightarrow> bool" where
-  "WF_BExpr e \<gamma> \<equiv> (case (BExprType e \<gamma>) of Some _ \<Rightarrow> True | None \<Rightarrow> False)"
-                                                                   
 text {* The following definition gives an (operational) semantics of expressions. 
 The evaluation of an expression in a state yields a value. *}
+
+text {* The following functions formalize well-formed instructions and instruction lists. 
+An assignment is well-formed whenever the source expression is well-formed, the target
+variable belongs to the context alphabet, and the type of the variable is the same as
+that of the expression. *}        
+fun WF_BInst :: "BInst \<Rightarrow> BContext \<Rightarrow> bool" and
+    WF_BInstList :: "BInst list \<Rightarrow> BContext \<Rightarrow> bool"
+where                                                                           
+  "WF_BInst (Asg v e) \<gamma> = 
+    (v \<in> \<alpha> \<gamma> \<and> WF_BExpr e \<gamma> \<and> Some ((\<tau> \<gamma>) v) = (BExprType e \<gamma>))" |
+  "WF_BInst (Blk il) \<gamma> = WF_BInstList il \<gamma>" |
+
+  "WF_BInstList [] _ = True" |
+  "WF_BInstList (i # il) \<gamma> = ((WF_BInst i \<gamma>) \<and> (WF_BInstList il \<gamma>))"                       
 
 primrec BEvalPredicate :: "BPredicate \<Rightarrow> BState \<Rightarrow> bool option" and
         BEvalExpr :: "BExpr \<Rightarrow> BState \<Rightarrow> BValue option" where
@@ -98,7 +256,6 @@ primrec BEvalPredicate :: "BPredicate \<Rightarrow> BState \<Rightarrow> bool op
 
   "BEvalExpr BTrue s = Some (BBool True)" |       
   "BEvalExpr BFalse s = Some (BBool False)" |
-  "BEvalExpr (BPred p) s = (case (BEvalPredicate p s) of Some b \<Rightarrow> Some(BBool b) | _ \<Rightarrow> None)" |
   "BEvalExpr (BVar v) s = Some ((\<V> s) v)" |
   "BEvalExpr (BConst v) s = Some v" |
   "BEvalExpr (BSum e1 e2) s = 
@@ -126,25 +283,6 @@ shows
   "\<exists> b . BEvalPred p \<sigma> = Some b"
 sorry
  
-text {* A type for B instructions. Needs to be extended to match the actual language. *}
-datatype BInst =
-  Asg BVariable BExpr |      
-  Blk "BInst list"
-
-text {* The following functions formalize well-formed instructions and instruction lists. 
-An assignment is well-formed whenever the source expression is well-formed, the target
-variable belongs to the context alphabet, and the type of the variable is the same as
-that of the expression. *}        
-fun WF_BInst :: "BInst \<Rightarrow> BContext \<Rightarrow> bool" and
-    WF_BInstList :: "BInst list \<Rightarrow> BContext \<Rightarrow> bool"
-where                                                                           
-  "WF_BInst (Asg v e) \<gamma> = 
-    (v \<in> \<alpha> \<gamma> \<and> WF_BExpr e \<gamma> \<and> Some ((\<tau> \<gamma>) v) = (BExprType e \<gamma>))" |
-  "WF_BInst (Blk il) \<gamma> = WF_BInstList il \<gamma>" |
-
-  "WF_BInstList [] _ = True" |
-  "WF_BInstList (i # il) \<gamma> = ((WF_BInst i \<gamma>) \<and> (WF_BInstList il \<gamma>))"                       
-                                                                         
 text {* Next, the semantics of statement is defined: a statement changes the state. *}
 primrec BEvalInst :: "BInst \<Rightarrow> BState \<Rightarrow> BState option" and
   BEvalInstList :: "BInst list \<Rightarrow> BState \<Rightarrow> BState option"
@@ -170,38 +308,7 @@ shows
   "\<exists> \<sigma>' . BEvalInst e \<sigma> = Some \<sigma>'"
 sorry
                                         
-text {* This completes the skeleton of a formal semantics of the B implementation language. 
-We next turn our attention to LLVM. First two types are introduced: they respectively 
-represent memory addresses and temporary variables.*}
-
-type_synonym LAddr = nat
-type_synonym LTemp = nat
-
-text {* Again, we consider that values can only be integer and Boolean values. Again this is a 
-simplification so that we can initially focus on other aspects of the formalization of LLVM code
-generation from B. *}
-datatype LValue = LInt int | LBool bool   
-
-text {* Expressions in LLVM can only be constants or temporaries. They are formalized as
-follows: *}
-
-datatype LExpr = Val LValue |  Var LTemp
-
-type_synonym LLabel = string
-
-text {* Next, (a few) LLVM statements are formalized in the following type. Note that the typing 
-annotation found in the concrete syntax of LLVM is omitted (the formalization currently avoids 
-considering typing issues anyway). *}
-
-datatype LStm =
-  Load LTemp LAddr |         -- "Loads contents from address to temporary"                      
-  Store LExpr LAddr |        -- "Store temporary value at address"
-  Add LTemp LExpr LExpr |    -- "Adds two values to temporary"
-  ICmpEq LTemp LExpr LExpr | -- "Compares to values and stores result into temporary"
-  BrU LLabel |               -- "Unconditional branch" 
-  Ret
-  
-text  {* Semantics *}
+subsection  {* Semantics for LLVM language elements. *}
 
 type_synonym LMemory = "LAddr \<Rightarrow> LValue"
 
@@ -213,10 +320,20 @@ record LCode =
   prog :: "LStm list"         -- "a sequence of instructions forming a program unit"
   blocks :: "LLabel \<Rightarrow> nat"   -- "position of each block label in the sequence"  
 
+(* DD: The following is voodoo for me. In summary, it makes the record definition behave as a
+datatype definition, which in turn makes it possible to have record patterns in function
+definitions.
+
+Source: https://lists.cam.ac.uk/pipermail/cl-isabelle-users/2011-June/msg00062.html 
+*)
+rep_datatype LCode_ext by (fact LCode.ext_induct) (fact LCode.ext_inject)
+
 record LState =
   pc :: nat                   -- "program counter"
   mem :: "LMemory"            -- "global store"
   local :: "LTemp \<Rightarrow> LValue"  -- "temporaries within LLVM functions"
+
+rep_datatype LState_ext by (fact LState.ext_induct) (fact LState.ext_inject)
 
 text {* Follows the specification of the semantics for the selected LLVM statements. As with a
 B instruction, the semantics of a LLVM statement is a state transformer. *}
@@ -247,66 +364,6 @@ fun LStep :: "LCode \<Rightarrow> LState \<Rightarrow> LState option" where
          else 
            Some \<lparr> pc = b label, mem = M, local = L \<rparr> )))"
 
-fun LRun :: "LCode \<Rightarrow> LState \<Rightarrow> LState option" where      
-  "LRun c st =
-    (if pc st = length (prog c) then 
-       Some st 
-     else
-       (case LStep c st of 
-         None \<Rightarrow> None | 
-         Some st' \<Rightarrow> LRun c st'))"
-  
-text {* The third part of the formalization deals with the generation of LLVM code from B
-expressions and instructions. All functions take as
-\begin{itemize}
-\item an element of B language to B translated;
-\item a function mapping B variables to LLVM memory addresses;
-\item the next LLVM temporary name to be used (each temporary may be assigned exactly once).
-\end{itemize}
-                              
-The first function formalizes the code generation for expressions:
- *}                    
-
-fun b2llvm_expr :: "BExpr \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)" and
-  b2llvm_pred :: "BPredicate \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
-where
-  "b2llvm_expr BTrue loc tmp = ([], Val(LBool True), tmp)" |
-  "b2llvm_expr BFalse loc tmp = ([], Val(LBool False), tmp)" |    
-  "b2llvm_expr (BPred p) loc tmp = b2llvm_pred p loc tmp" |
-  "b2llvm_expr (BVar v) loc tmp = ( [ Load tmp (loc v) ], Var tmp, tmp+1)" |    
-  "b2llvm_expr (BConst (BInt i)) loc tmp = ([], Val (LInt i), tmp)" |
-  "b2llvm_expr (BConst (BBool b)) loc tmp = ([], Val (LBool b), tmp)" |
-  "b2llvm_expr (BSum e1 e2) loc tmp = 
-    (case (b2llvm_expr e1 loc tmp) of
-      (p1, v1, tmp1) \<Rightarrow>
-        (case (b2llvm_expr e2 loc tmp1) of
-          (p2, v2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 v1 v2 ], Var tmp2, tmp2+1)))" |      
-
-  "b2llvm_pred (BEq e1 e2) loc tmp =
-    (case (b2llvm_expr e1 loc tmp) of
-      (il1, v1, tmp1) \<Rightarrow>
-        (case (b2llvm_expr e2 loc tmp1) of
-          (il2, v2, tmp2) \<Rightarrow> ( il1 @ il2 @ [ ICmpEq tmp2 v1 v2 ], Var tmp2, tmp2+1)))" |      
-  "b2llvm_pred (BConj p1 p2) loc tmp =                        
-    (case (b2llvm_pred p1 loc tmp) of
-      (il1, v1, tmp1) \<Rightarrow>
-        (case (b2llvm_pred p2 loc tmp1) of
-          (il2, v2, tmp2) \<Rightarrow> (il1 @ il2, Var tmp2, tmp2+1)))" |           -- "TODO"             
-  "b2llvm_pred (BNeg p) loc tmp =                          
-    (case (b2llvm_pred p loc tmp) of
-      (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"                          -- "TODO"
-
-text {* Next, the following function formalizes the translation for B instructions. *}
-
-fun b2llvm_stm :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" where
-  "b2llvm_stm (Asg v e) loc temp =
-    (case (b2llvm_expr e loc temp) of
-      (sl, e', t') \<Rightarrow> (sl @ [ (Store e' (loc v)) ], t'))" |
-  "b2llvm_stm (Blk []) loc temp = ( [], temp )" |
-  "b2llvm_stm (Blk (x # xs)) loc temp =
-    (case (b2llvm_stm x loc temp) of
-      (sl, t') \<Rightarrow> (case (b2llvm_stm (Blk xs) loc temp) of
-                    (sl', t'') \<Rightarrow> (sl @ sl', t'')))"
 
 end
 

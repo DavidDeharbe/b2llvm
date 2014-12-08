@@ -20,11 +20,11 @@ text {* A type for B expressions. *}
 datatype BExpr =
   Const BValue |
   BVar BVariable |
-  Sum BExpr BExpr (infix "+\<^sub>B" 65)
+  Sum BExpr BExpr
 
 text {* A type for B instructions. Needs to be extended to match the actual language. *}
 datatype BInst =
-  Asg BVariable BExpr (infix "\<leftarrow>" 60) |
+  Asg BVariable BExpr |
   Blk "BInst list"
 
 subsection {* Syntax for target LLVM code *}
@@ -34,7 +34,7 @@ We next turn our attention to LLVM. First two types are introduced: they respect
 represent memory addresses and temporary variables.*}
 
 type_synonym LAddr = nat
-type_synonym LTemp = nat
+type_synonym LTemp = int
 
 text {* Again, we consider that values can only be integer values. *}
 datatype LValue = LInt int
@@ -133,7 +133,7 @@ fun
 where
   "b2llvm_expr (Const (BInt i)) loc tmp = ([], (Val (LInt i)), tmp)" |
   "b2llvm_expr (BVar v) loc tmp = ( [ Load tmp (loc v) ], Var tmp, tmp+1)" |
-  "b2llvm_expr (e1 +\<^sub>B e2) loc tmp =
+  "b2llvm_expr (Sum e1 e2) loc tmp =
     (let (il1, v1, tmp1) = (b2llvm_expr e1 loc tmp) in
        (let (il2, v2, tmp2) = (b2llvm_expr e2 loc tmp1) in
          (il1 @ il2 @ [ Add tmp2 v1 v2 ], Var tmp2, tmp2+1)))"
@@ -145,7 +145,7 @@ inductive
   b2llvm_stm_list :: "BInst list \<times> DataMap \<times> LTemp \<Rightarrow> (LStm list \<times> LTemp) \<Rightarrow> bool"
 where
   "\<lbrakk> b2llvm_expr e m tmp = (sl, e', t') \<rbrakk> \<Longrightarrow>
-  b2llvm_stm (v \<leftarrow> e, m, tmp) (sl @ [ Store e' (m v) ], t')" |
+  b2llvm_stm (Asg v e, m, tmp) (sl @ [ Store e' (m v) ], t')" |
   "\<lbrakk> b2llvm_stm_list (l, m, tmp) (sl, tmp') \<rbrakk> \<Longrightarrow>
     b2llvm_stm (Blk l, m, tmp) (sl, tmp' )" |
 
@@ -170,7 +170,7 @@ an expression in a state yields a value. *}
 fun BEvalExpr :: "BExpr \<times> BState \<Rightarrow>  BValue" where
   "BEvalExpr (Const v, _) = v" |
   "BEvalExpr (BVar v, \<sigma>) = store \<sigma> v" |
-  "BEvalExpr (e1 +\<^sub>B e2, \<sigma>) = (case (BEvalExpr (e1, \<sigma>), BEvalExpr(e2, \<sigma>)) of
+  "BEvalExpr (Sum e1 e2, \<sigma>) = (case (BEvalExpr (e1, \<sigma>), BEvalExpr(e2, \<sigma>)) of
     (BInt i1, BInt i2) \<Rightarrow> BInt (i1 + i2))"
 
 text {* The "Concrete Semantics" textbook instead used predicates to specify big-step
@@ -179,7 +179,7 @@ inductive
   Bbig_step :: "BInst \<times> BState \<Rightarrow> BState \<Rightarrow> bool" (infix "\<leadsto>\<^sub>B" 55) and
   Bbig_step_l :: "BInst list \<times> BState \<Rightarrow> BState \<Rightarrow> bool" (infix "\<leadsto>\<^sub>B\<^sup>*" 55)
 where
-  "(v \<leftarrow> e, \<sigma>) \<leadsto>\<^sub>B \<lparr> alpha = alpha \<sigma>, store = (store \<sigma>) (v := BEvalExpr(e, \<sigma>)) \<rparr>" |
+  "(Asg v e, \<sigma>) \<leadsto>\<^sub>B \<lparr> alpha = alpha \<sigma>, store = (store \<sigma>) (v := BEvalExpr(e, \<sigma>)) \<rparr>" |
   "\<lbrakk> (il, \<sigma>) \<leadsto>\<^sub>B\<^sup>* \<sigma>' \<rbrakk> \<Longrightarrow> (Blk il, \<sigma>) \<leadsto>\<^sub>B \<sigma>'" |
   
   "( [], \<sigma>) \<leadsto>\<^sub>B\<^sup>* \<sigma>" |
@@ -193,7 +193,7 @@ record LState =
 
 fun LEvalExpr :: "LExpr \<times> LState \<Rightarrow> LValue" where
   "LEvalExpr (Val v, _) = v" |
-  "LEvalExpr (Var v, \<sigma>) = (mem \<sigma>) v"
+  "LEvalExpr (Var v, \<sigma>) = (local \<sigma>) v"
   
 text {* Next, (a few) LLVM statements are formalized in the following type. Note that the typing 
 annotation found in the concrete syntax of LLVM is omitted (the formalization currently avoids 

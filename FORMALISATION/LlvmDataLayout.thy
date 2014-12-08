@@ -38,19 +38,57 @@ record DataLayout =
   StackAlignment :: "nat option" -- "defaults to unspecified"
   PointerAlignment :: "nat * nat * (nat option)"
   IntegerAlignment :: "nat \<Rightarrow> TypeAlignment option"         --"isize:abi:pref"
-  VectorAlignmnent :: "nat \<Rightarrow> (nat * nat)"         -- "vsize:abi:pref"
-  FloatAlignment :: "nat \<Rightarrow> (nat * nat)"           -- "fsize:abi:pref"
-  AggregateAlignment :: "nat \<Rightarrow> (nat * nat)"       -- "asize:abi:pref"
-  StackObjectAlignment :: "nat \<Rightarrow> (nat * nat)" -- "ssize:abi:pref"
+  VectorAlignment :: "nat \<Rightarrow> TypeAlignment option"         -- "vsize:abi:pref"
+  FloatAlignment :: "nat \<Rightarrow> TypeAlignment option"           -- "fsize:abi:pref"
+  AggregateAlignment :: "nat \<Rightarrow> TypeAlignment option"       -- "asize:abi:pref"
+  StackObjectAlignment :: "nat \<Rightarrow> TypeAlignment option" -- "ssize:abi:pref"
   NativeIntegers :: "nat set" -- "native integer widths for the target CPU in bits"
+
+fun DefaultIntegerAlignment :: "nat \<Rightarrow> (TypeAlignment option)"
+where
+  "DefaultIntegerAlignment w =
+  (if w = 1 then Some\<lparr> ABI = 8, Pref = Some 8 \<rparr>
+   else if w = 8 then Some\<lparr> ABI = 8, Pref = Some 8 \<rparr>
+   else if w = 16 then Some\<lparr> ABI = 16, Pref = Some 16 \<rparr>
+   else if w = 32 then Some\<lparr> ABI = 32, Pref = Some 32 \<rparr>
+   else if w = 64 then Some\<lparr> ABI = 64, Pref = Some 64 \<rparr>
+   else None)"
+
+fun DefaultVectorAlignment :: "nat \<Rightarrow> (TypeAlignment option)"
+where
+  "DefaultVectorAlignment w =
+  (if w = 64 then Some\<lparr> ABI = 64, Pref = Some 64 \<rparr>
+   else if w = 128 then Some\<lparr> ABI = 128, Pref = Some 128 \<rparr>
+   else None)"
+
+fun DefaultFloatAlignment :: "nat \<Rightarrow> (TypeAlignment option)"
+where
+  "DefaultFloatAlignment w =
+  (if w = 32 then Some\<lparr> ABI = 32, Pref = Some 32 \<rparr>
+   else if w = 64 then Some\<lparr> ABI = 64, Pref = Some 64 \<rparr>
+   else None)"
+
+fun DefaultAggregateAlignment :: "nat \<Rightarrow> (TypeAlignment option)"
+where
+  "DefaultAggregateAlignment w =
+  (if w = 0 then Some\<lparr> ABI = 0, Pref = Some 1 \<rparr> else None )"
+
+fun DefaultStackAlignment :: "nat \<Rightarrow> (TypeAlignment option)"
+where
+  "DefaultStackAlignment w =
+  (if w = 0 then Some\<lparr> ABI = 64, Pref = Some 64 \<rparr> else None )"
 
 definition DefaultDataLayout :: DataLayout where
   "DefaultDataLayout = 
     \<lparr> EndianNess = BigEndian,
       StackAlignment = None,
       PointerAlignment = (64, 64, Some 64),
-      IntegerAlignment = {1 |-> Some (8,8), 8 |-> Some(8, 8) \<rparr>, 16 |-> Some(16, 16),
-                          32 |-> Some(32, 32), "
+      IntegerAlignment = DefaultIntegerAlignment,
+      VectorAlignment = DefaultVectorAlignment,
+      FloatAlignment = DefaultFloatAlignment,
+      AggregateAlignment = DefaultAggregateAlignment,
+      StackObjectAlignment = DefaultStackAlignment,
+      NativeIntegers = {8, 16, 32, 64} \<rparr> "
   
 end
 

@@ -23,7 +23,7 @@ Specification of LLVM does not include typing annotations.
 | Type system  | integers, *Booleans*	        |
 | Expression  | integer literals, *Boolean literals*, variables, sum          |
 | *Predicate* | *equalities*, *conjunctions*, *negations*        |
-| Instruction | assignment, block              |
+| Instruction | assignment, block, *if*, *skip*              |
 
 Specification of LLVM does not include typing annotations.
 
