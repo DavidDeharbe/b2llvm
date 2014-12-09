@@ -174,7 +174,7 @@ where
   "b2llvm_stm (Asg v e) layout counter =
     (let (sl, e', counter') = (b2llvm_expr e layout counter) in
        (sl @ [ Store e' (layout v) ], counter'))" |
-  "b2llvm_stm i layout counter = ([], counter)"
+  "b2llvm_stm _ _ counter = ([], counter)"
 
 fun b2llvm_stm_label :: "BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
 where
