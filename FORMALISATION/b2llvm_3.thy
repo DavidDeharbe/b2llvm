@@ -75,6 +75,7 @@ text {* We next turn our attention to LLVM. First two types are introduced: they
 represent memory addresses and temporary variables.*}
 
 type_synonym LAddr = nat
+
 type_synonym LTemp = int
 
 text {* LLVM data types are integer types and pointer types. *}
@@ -109,6 +110,8 @@ datatype LStm =
 
 section {* Formalization of the code generation rules*}
 
+type_synonym VarLayout = "BVariable \<Rightarrow> LAddr"
+
 text {* The functions formalizing the generation of LLVM code from B
 expressions and instructions take as parameters:
 \begin{itemize}
@@ -120,19 +123,21 @@ expressions and instructions take as parameters:
 The first function formalizes the code generation for expressions:
  *}                    
 
-fun b2llvm_expr :: "BContext \<Rightarrow> BExpr \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LType * LTemp)"
+fun b2llvm_expr :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BExpr \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LType * LTemp)"
 where
-  "b2llvm_expr \<Gamma> BTrue loc tmp = ([], Val(LInt 1), LIntType 1, tmp)" |
-  "b2llvm_expr \<Gamma> BFalse loc tmp = ([], Val(LInt 0), LIntType 1, tmp)" |    
-  "b2llvm_expr \<Gamma> (BVar v) loc tmp = (let t = b2llvm_type (\<tau> \<Gamma> v) in
-    ( [ Load tmp (LPtrType t) (loc v) ], Var tmp, t, tmp+1))" |    
-  "b2llvm_expr \<Gamma> (BConst (BInt i)) loc tmp = ([], Val (LInt i), LIntType 32, tmp)" |
-  "b2llvm_expr \<Gamma> (BConst (BBool b)) loc tmp = ([], Val (LInt (if b then 1 else 0)), LIntType 1, tmp)" |
-  "b2llvm_expr \<Gamma> (BSum e1 e2) loc tmp = 
-    (case (b2llvm_expr \<Gamma> e1 loc tmp) of
-      (p1, v1, t1, tmp1) \<Rightarrow>
-        (case (b2llvm_expr \<Gamma> e2 loc tmp1) of
-          (p2, v2, t2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 t1 v1 v2 ], Var tmp2, t1, tmp2+1)))"
+  "b2llvm_expr \<Gamma> \<L> \<epsilon> tmp = 
+    (case \<epsilon> of 
+      BTrue \<Rightarrow> ([], Val(LInt 1), LIntType 1, tmp) |
+      BFalse \<Rightarrow> ([], Val(LInt 0), LIntType 1, tmp) |    
+      BVar v \<Rightarrow> (let t = b2llvm_type (\<tau> \<Gamma> v) in
+        ( [ Load tmp (LPtrType t) (\<L> v) ], Var tmp, t, tmp+1)) |    
+      BConst(BInt i) \<Rightarrow> ([], Val (LInt i), LIntType 32, tmp) |
+      BConst(BBool b) \<Rightarrow> ([], Val (LInt (if b then 1 else 0)), LIntType 1, tmp) |
+      BSum e1 e2 \<Rightarrow> 
+        (case (b2llvm_expr \<Gamma> \<L> e1 tmp) of
+          (p1, v1, t1, tmp1) \<Rightarrow>
+            (case (b2llvm_expr \<Gamma> \<L> e2 tmp1) of
+              (p2, v2, t2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 t1 v1 v2 ], Var tmp2, t1, tmp2+1))))"
 
 (*          
 value "(let (v0, v1, v2) = (0, 1, 2) in 
@@ -142,29 +147,34 @@ value "(let (v0, v1, v2) = (0, 1, 2) in
 value "(let (v0, v1, v2) = (0, 1, 2) in 
           (b2llvm_expr (BSum (BSum (BVar 0) (BConst (BInt 1))) (BVar 1)) (\<lambda> x . x) 0))"
 *)          
-fun b2llvm_pred :: "BContext \<Rightarrow> BPredicate \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
+fun b2llvm_pred :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BPredicate \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LTemp)"
 where
-  "b2llvm_pred \<Gamma> (BEq e1 e2) loc label_true label_false tmp =
-    (case (b2llvm_expr \<Gamma> e1 loc tmp) of
-      (il1, v1, ty1, tmp1) \<Rightarrow>
-        (case (b2llvm_expr \<Gamma> e2 loc tmp1) of
-          (il2, v2, ty2, tmp2) \<Rightarrow> 
-            ( il1 @ il2 @ 
-              [ ICmpEq tmp2 ty1 v1 v2 ,
-                BrC (LIntType 1) (Var tmp2) label_true label_false], 
-              Var tmp2, tmp2 + 1)))" |      
-  "b2llvm_pred \<Gamma> (BConj p1 p2) loc label_true label_false tmp =                        
-    (case (b2llvm_pred \<Gamma> p1 loc tmp label_false (tmp + 1)) of
-      (il1, v1, tmp1) \<Rightarrow>
-        (case (b2llvm_pred \<Gamma> p2 loc label_true label_false (tmp1 + 1)) of
-          (il2, v2, tmp2) \<Rightarrow> 
-            (il1 @ 
-             [ BrC (LIntType 1) v1 tmp1 label_false, Label tmp ] @ 
-             il2, 
-             Var tmp2, tmp2)))" |
-  "b2llvm_pred \<Gamma> (BNeg p) loc label_true label_false tmp =                          
-    (case (b2llvm_pred \<Gamma> p loc label_false label_true tmp) of
-      (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1))"
+  "b2llvm_pred \<Gamma> \<L> \<phi> label_true label_false tmp =
+    (case \<phi> of
+    
+      (BEq e1 e2) \<Rightarrow> 
+        (case (b2llvm_expr \<Gamma> \<L> e1 tmp) of
+          (il1, v1, ty1, tmp1) \<Rightarrow>
+            (case (b2llvm_expr \<Gamma> \<L> e2 tmp1) of
+              (il2, v2, ty2, tmp2) \<Rightarrow> 
+                ( il1 @ il2 @ 
+                  [ ICmpEq tmp2 ty1 v1 v2 ,
+                    BrC (LIntType 1) (Var tmp2) label_true label_false], 
+                  Var tmp2, tmp2 + 1))) |
+                  
+      (BConj p1 p2) \<Rightarrow>
+        (case (b2llvm_pred \<Gamma> \<L> p1 tmp label_false (tmp + 1)) of
+          (il1, v1, tmp1) \<Rightarrow>
+            (case (b2llvm_pred \<Gamma> \<L> p2 label_true label_false (tmp1 + 1)) of
+              (il2, v2, tmp2) \<Rightarrow> 
+                (il1 @ 
+                 [ BrC (LIntType 1) v1 tmp1 label_false, Label tmp ] @ 
+                 il2, 
+                 Var tmp2, tmp2))) |
+
+      (BNeg p) \<Rightarrow>
+        (case (b2llvm_pred \<Gamma> \<L> p label_false label_true tmp) of
+          (il, v, tmp') \<Rightarrow> (il, Var tmp', tmp'+1)))"
 
 text {* Next, the following function formalizes the translation for B instructions. The
 parameters are:
@@ -178,47 +188,51 @@ of the code produced for the current B instruction;
 \end{itemize}
 *}
 
-fun b2llvm_stm :: "BContext \<Rightarrow> BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
+fun b2llvm_stm :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BInst \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
 where
-  "b2llvm_stm \<Gamma> Skip layout counter =  ([], counter)" |
-  "b2llvm_stm \<Gamma> (Asg v e) layout counter =
-    (let (sl, e', ty_e, counter') = (b2llvm_expr \<Gamma> e layout counter) in
-      (let ty_v = b2llvm_type(\<tau> \<Gamma> v) in
-       (sl @ [ Store ty_e e' ty_v (layout v) ], counter')))" |
-  "b2llvm_stm _ _ _ counter = ([], counter)"
+  "b2llvm_stm \<Gamma> \<L> s counter =
+    (case s of
+      Skip \<Rightarrow> ([], counter) |
+      Asg v e \<Rightarrow> 
+        (let (sl, e', ty_e, counter') = (b2llvm_expr \<Gamma> \<L> e counter) in
+          (let ty_v = b2llvm_type(\<tau> \<Gamma> v) in
+           (sl @ [ Store ty_e e' ty_v (\<L>  v) ], counter'))) |
+      _ \<Rightarrow> ([], counter))" (* actually should be undefined *)
 
-fun b2llvm_stm_label :: "BContext \<Rightarrow> BInst \<Rightarrow> (BVariable \<Rightarrow> LAddr) \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
+fun b2llvm_stm_label :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BInst \<Rightarrow> LTemp \<Rightarrow> LTemp \<Rightarrow> (LStm list * LTemp)" 
 where
-  "b2llvm_stm_label \<Gamma> Skip layout exit counter = 
-    (let (sl, counter') = b2llvm_stm \<Gamma> Skip layout counter in
-      (sl @ [BrU exit], counter'))" |
-  "b2llvm_stm_label \<Gamma> (Asg v e) layout exit counter = 
-    (let (sl, counter') = b2llvm_stm \<Gamma> (Asg v e) layout counter in
-      (sl @ [BrU exit], counter'))" |
-  "b2llvm_stm_label \<Gamma> (Blk []) layout exit counter = 
-    ( [BrU exit], counter )" |
-  "b2llvm_stm_label \<Gamma> (Blk (x # xs)) layout exit counter =
-    (let (sl, counter') = 
-       (case x of
-         (If _ _ _) \<Rightarrow> 
-           (let (sli, tempi) = b2llvm_stm_label \<Gamma> x layout counter (counter + 1) in
-             (sli @ [ Label counter ], counter + 1)) |
-          _ \<Rightarrow> 
-            b2llvm_stm \<Gamma> x layout counter) 
-     in    
-       (let (sl', counter'') = b2llvm_stm_label \<Gamma> (Blk xs) layout exit counter' in
-          (sl @ sl', counter'')))" |
-  "b2llvm_stm_label \<Gamma> (If c i1 i2) varmap exit counter =
-    (let (bk_then, bk_else) = (counter, counter + 1) in
-      (let (ilc, e1, tmp1) = b2llvm_pred \<Gamma> c varmap bk_then bk_else (counter + 2) in
-        (let (ilt, tmp2) = b2llvm_stm_label \<Gamma> i1 varmap exit tmp1 in
-          (let (ile, tmp3) = b2llvm_stm_label \<Gamma> i2 varmap exit tmp2 in
-            (ilc @
-            [Label bk_then] @
-            ilt @
-            [Label bk_else] @
-            ile,
-            tmp3)))))"
+  "b2llvm_stm_label \<Gamma> \<L> s exit counter = 
+    (case s of
+      Skip \<Rightarrow>
+        (let (sl, counter') = b2llvm_stm \<Gamma> \<L> Skip counter in
+          (sl @ [BrU exit], counter')) |
+      (Asg v e) \<Rightarrow>
+        (let (sl, counter') = b2llvm_stm \<Gamma> \<L> (Asg v e) counter in
+          (sl @ [BrU exit], counter')) |
+      (Blk []) \<Rightarrow>
+        ( [BrU exit], counter ) |
+      (Blk (x # xs)) \<Rightarrow>
+        (let (sl, counter') = 
+          (case x of
+            (If _ _ _) \<Rightarrow> 
+              (let (sli, tempi) = b2llvm_stm_label \<Gamma> \<L> x counter (counter + 1) in
+                (sli @ [ Label counter ], counter + 1)) |
+            _ \<Rightarrow> 
+               b2llvm_stm \<Gamma> \<L> x counter) 
+         in    
+           (let (sl', counter'') = b2llvm_stm_label \<Gamma> \<L> (Blk xs) exit counter' in
+             (sl @ sl', counter''))) |
+      (If c i1 i2) \<Rightarrow>
+        (let (bk_then, bk_else) = (counter, counter + 1) in
+          (let (ilc, e1, tmp1) = b2llvm_pred \<Gamma> \<L> c bk_then bk_else (counter + 2) in
+            (let (ilt, tmp2) = b2llvm_stm_label \<Gamma> \<L> i1 exit tmp1 in
+              (let (ile, tmp3) = b2llvm_stm_label \<Gamma> \<L> i2 exit tmp2 in
+                 (ilc @
+                  [Label bk_then] @
+                  ilt @
+                  [Label bk_else] @
+                  ile,
+                  tmp3))))))"
 (*
 value "let (v0, v1, v2) = (0, 1, 2) in 
           b2llvm_stm_label Skip (\<lambda> x . x) -1 0"
