@@ -34,7 +34,7 @@ Specification of LLVM does not include typing annotations.
 | Type system  | integers, Booleans	      |
 | Expression  | integer literals, Boolean literals, variables, sum              |
 | Predicate   | equality, conjunction, negations        |
-| Instruction | assignment, block            |
+| Instruction | assignment, block, if, skip            |
 
 *Specification of LLVM does include typing annotations*.
 
@@ -45,4 +45,16 @@ Specification of LLVM does not include typing annotations.
 | Type system  | integers, Booleans, *enumerations*	      |
 | Expression  | integer literals, Boolean literals, variables, sum              |
 | Predicate   | equality, conjunction, negations        |
-| Instruction | assignment, block            |
+| Instruction | assignment, block, if, skip            |
+
+- Step 5:
+
+| Constructions| supported        |
+|--------------|------------------|
+| Type system  | integers, Booleans, enumerations	      |
+| Expression  | integer literals, Boolean literals, variables, sum              |
+| Predicate   | equality, conjunction, negations        |
+| Instruction | assignment, block, if, skip, *while*            |
+
+*Differentiate types for labels and temporaries.*
+
