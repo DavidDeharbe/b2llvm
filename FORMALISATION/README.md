@@ -38,3 +38,11 @@ Specification of LLVM does not include typing annotations.
 
 *Specification of LLVM does include typing annotations*.
 
+- Step 4:
+
+| Constructions| supported        |
+|--------------|------------------|
+| Type system  | integers, Booleans, *enumerations*	      |
+| Expression  | integer literals, Boolean literals, variables, sum              |
+| Predicate   | equality, conjunction, negations        |
+| Instruction | assignment, block            |
