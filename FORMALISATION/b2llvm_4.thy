@@ -157,19 +157,20 @@ The first function formalizes the code generation for expressions:
 
 fun b2llvm_expr :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BExpr \<Rightarrow> LTemp \<Rightarrow> (LStm list * LExpr * LType * LTemp)"
 where
-  "b2llvm_expr \<Gamma> \<L> \<epsilon> tmp = 
+  "b2llvm_expr \<Gamma> \<L> \<epsilon> counter = 
     (case \<epsilon> of 
       BVar v \<Rightarrow> (let t = b2llvm_type \<Gamma> (\<tau> \<Gamma> v) in
-        ( [ Load tmp (LPtrType t) (\<L> v) ], Var tmp, t, tmp+1)) |    
-      BConst(BInt i) \<Rightarrow> ([], Val (LInt i), LIntType 32, tmp) |
-      BConst(BBool b) \<Rightarrow> ([], Val (LInt (if b then 1 else 0)), LIntType 1, tmp) |
+        ( [ Load counter (LPtrType t) (\<L> v) ], Var counter, t, counter + 1)) |    
+      BConst(BInt i) \<Rightarrow> ([], Val (LInt i), LIntType 32, counter) |
+      BConst(BBool b) \<Rightarrow> ([], Val (LInt (if b then 1 else 0)), LIntType 1, counter) |
       BConst(BEnum t e) \<Rightarrow> (case b2llvm_type \<Gamma> (BEnumeration t) of
-        (LIntType w) => ([], Val (LInt (int e)), LIntType w, tmp)) |
+        (LIntType w) => ([], Val (LInt (int e)), LIntType w, counter)) |
       BSum e1 e2 \<Rightarrow> 
-        (case (b2llvm_expr \<Gamma> \<L> e1 tmp) of
-          (p1, v1, t1, tmp1) \<Rightarrow>
-            (case (b2llvm_expr \<Gamma> \<L> e2 tmp1) of
-              (p2, v2, t2, tmp2) \<Rightarrow> ( p1 @ p2 @ [ Add tmp2 t1 v1 v2 ], Var tmp2, t1, tmp2+1))))"
+        (case (b2llvm_expr \<Gamma> \<L> e1 counter) of
+          (p1, v1, t1, counter1) \<Rightarrow>
+            (case (b2llvm_expr \<Gamma> \<L> e2 counter1) of
+              (p2, v2, t2, counter2) \<Rightarrow> 
+                ( p1 @ p2 @ [ Add counter2 t1 v1 v2 ], Var counter2, t1, counter2 + 1))))"
 
 (*          
 value "(let (v0, v1, v2) = (0, 1, 2) in 

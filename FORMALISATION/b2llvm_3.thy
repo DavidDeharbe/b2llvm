@@ -45,7 +45,6 @@ text {* B has two distinct syntactic categories for expressions and predicates, 
 
 datatype 
   BExpr =
-    BTrue | BFalse |
     BVar BVariable | BConst BValue | BSum BExpr BExpr
 and 
   BPredicate = 
@@ -54,8 +53,6 @@ and
 
 text {* A B expression has a type. Predicates are always Boolean valued. The following function formalizes this relation: *}
 fun BExprType :: "BExpr \<Rightarrow> BContext \<Rightarrow> BType option" where
-  "BExprType BTrue _ = Some BBoolType" |               
-  "BExprType BFalse _ = Some BBoolType" |                                     
   "BExprType (BVar v) \<gamma> = (if v \<in> \<alpha> \<gamma> then Some (\<tau> \<gamma> v) else None)" |                                 
   "BExprType (BConst k) _ = Some (BValueType k)" |
   "BExprType (BSum e1 e2) \<gamma> = 
@@ -127,8 +124,6 @@ fun b2llvm_expr :: "BContext \<Rightarrow> VarLayout \<Rightarrow> BExpr \<Right
 where
   "b2llvm_expr \<Gamma> \<L> \<epsilon> tmp = 
     (case \<epsilon> of 
-      BTrue \<Rightarrow> ([], Val(LInt 1), LIntType 1, tmp) |
-      BFalse \<Rightarrow> ([], Val(LInt 0), LIntType 1, tmp) |    
       BVar v \<Rightarrow> (let t = b2llvm_type (\<tau> \<Gamma> v) in
         ( [ Load tmp (LPtrType t) (\<L> v) ], Var tmp, t, tmp+1)) |    
       BConst(BInt i) \<Rightarrow> ([], Val (LInt i), LIntType 32, tmp) |
